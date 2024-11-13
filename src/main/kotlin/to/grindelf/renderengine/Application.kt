@@ -9,6 +9,7 @@ import java.awt.event.MouseEvent
 import java.awt.event.MouseMotionAdapter
 import javax.swing.JFrame
 import javax.swing.JPanel
+import kotlin.math.max
 
 class Camera {
     val position = Vector3f(0f, 0f, -5f)
@@ -34,15 +35,14 @@ class RenderPanel : JPanel() {
     init {
         addMouseListener(object : MouseAdapter() {
             override fun mousePressed(e: MouseEvent) {
-                // Нажатие для начала вращения
                 requestFocus()
             }
         })
 
         addMouseMotionListener(object : MouseMotionAdapter() {
             override fun mouseDragged(e: MouseEvent) {
-                rotationX += e.x.toFloat() * 0.01f
-                rotationY += e.y.toFloat() * 0.01f
+                rotationX += e.y.toFloat() * 0.0001f
+                rotationY += e.x.toFloat() * 0.0001f
                 repaint()
             }
         })
@@ -51,28 +51,28 @@ class RenderPanel : JPanel() {
     override fun paintComponent(g: Graphics) {
         super.paintComponent(g)
         val transform = Matrix4f()
-            .rotateX(rotationX)
-            .rotateY(rotationY)
             .mul(camera.projectionMatrix)
             .mul(camera.getViewMatrix())
+            .rotateX(rotationX)
+            .rotateY(rotationY)
 
-        // Преобразование вершин куба с учетом вращения и проекции
         val projectedVertices = cube.vertices.map { vertex ->
             val transformed = Vector3f()
             transform.transformPosition(vertex, transformed)
+
+            // Проверяем значение Z для корректной перспективной проекции
             val screenX = (transformed.x / transformed.z) * width / 2 + width / 2
             val screenY = -(transformed.y / transformed.z) * height / 2 + height / 2
             Vector3f(screenX, screenY, transformed.z)
         }
 
-        // Отрисовка с освещением
         cube.faces.forEach { face ->
             val faceNormal = calculateFaceNormal(
                 cube.vertices[face[0]],
                 cube.vertices[face[1]],
                 cube.vertices[face[2]]
             )
-            val lightIntensity = maxOf(0f, faceNormal.dot(light.direction))
+            val lightIntensity = max(0f, faceNormal.dot(light.direction))
 
             val faceColor = Color(
                 (light.color.red * lightIntensity).toInt().coerceAtMost(255),
@@ -95,8 +95,6 @@ class RenderPanel : JPanel() {
     }
 }
 
-// Вспомогательные функции и запуск окна
-
 fun createCube(): Mesh {
     val vertices = listOf(
         Vector3f(-1f, -1f, -1f), Vector3f(1f, -1f, -1f),
@@ -105,9 +103,9 @@ fun createCube(): Mesh {
         Vector3f(1f, 1f, 1f), Vector3f(-1f, 1f, 1f)
     )
     val faces = listOf(
-        listOf(0, 1, 2, 3), listOf(4, 5, 6, 7),  // Передняя и задняя стороны
-        listOf(0, 3, 7, 4), listOf(1, 2, 6, 5),  // Верхняя и нижняя стороны
-        listOf(0, 1, 5, 4), listOf(3, 2, 6, 7)   // Левая и правая стороны
+        listOf(0, 1, 2, 3), listOf(4, 5, 6, 7),
+        listOf(0, 3, 7, 4), listOf(1, 2, 6, 5),
+        listOf(0, 1, 5, 4), listOf(3, 2, 6, 7)
     )
     return Mesh(vertices, faces)
 }
