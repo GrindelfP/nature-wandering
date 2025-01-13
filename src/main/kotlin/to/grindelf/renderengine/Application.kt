@@ -4,7 +4,8 @@ import org.joml.Matrix4f
 import org.joml.Vector3f
 import java.awt.Color
 import java.awt.Graphics
-import java.awt.event.MouseAdapter
+import java.awt.event.KeyAdapter
+import java.awt.event.KeyEvent
 import java.awt.event.MouseEvent
 import java.awt.event.MouseMotionAdapter
 import javax.swing.JFrame
@@ -24,21 +25,48 @@ data class Light(val direction: Vector3f, val color: Color)
 
 class Mesh(val vertices: List<Vector3f>, val faces: List<List<Int>>)
 
+// Interface for renderable shapes
+interface Renderable {
+    val position: Vector3f
+    val mesh: Mesh
+    fun getTransformMatrix(): Matrix4f
+}
+
+class StaticShape(override val position: Vector3f, override val mesh: Mesh) : Renderable {
+    override fun getTransformMatrix(): Matrix4f {
+        return Matrix4f().translate(position)
+    }
+}
+
+class MovableCube : Renderable {
+    override val position = Vector3f(0f, 0f, 0f)
+    override val mesh = createCube()
+
+    fun move(dx: Float, dy: Float, dz: Float) {
+        position.add(dx, dy, dz)
+    }
+
+    override fun getTransformMatrix(): Matrix4f {
+        return Matrix4f().translate(position)
+    }
+}
+
 class RenderPanel : JPanel() {
     private val camera = Camera()
-    private val cube = createCube()
     private val light = Light(Vector3f(-1f, -1f, -1f).normalize(), Color.WHITE)
+
+    private val shapes = listOf(
+        StaticShape(Vector3f(2f, 0f, 0f), createCube()),
+        StaticShape(Vector3f(-2f, 0f, -3f), createCube()),
+        StaticShape(Vector3f(0f, 2f, -5f), createCube())
+    )
+    private val movableCube = MovableCube()
 
     private var rotationX = 0f
     private var rotationY = 0f
 
     init {
-        addMouseListener(object : MouseAdapter() {
-            override fun mousePressed(e: MouseEvent) {
-                requestFocus()
-            }
-        })
-
+        // Mouse listener for rotation
         addMouseMotionListener(object : MouseMotionAdapter() {
             override fun mouseDragged(e: MouseEvent) {
                 rotationX += e.y.toFloat() * 0.0001f
@@ -46,31 +74,51 @@ class RenderPanel : JPanel() {
                 repaint()
             }
         })
+
+        // Key listener for movement
+        addKeyListener(object : KeyAdapter() {
+            override fun keyPressed(e: KeyEvent) {
+                when (e.keyCode) {
+                    KeyEvent.VK_W -> {
+                        print("W")
+                        movableCube.move(0f, 0f, 0.1f)
+                    }
+                    KeyEvent.VK_S -> movableCube.move(0f, 0f, -0.1f)
+                    KeyEvent.VK_A -> movableCube.move(-0.1f, 0f, 0f)
+                    KeyEvent.VK_D -> movableCube.move(0.1f, 0f, 0f)
+                }
+                repaint()
+            }
+        })
     }
 
     override fun paintComponent(g: Graphics) {
         super.paintComponent(g)
+        renderShape(g, movableCube)
+        shapes.forEach { shape -> renderShape(g, shape) }
+    }
+
+    private fun renderShape(g: Graphics, shape: Renderable) {
         val transform = Matrix4f()
             .mul(camera.projectionMatrix)
             .mul(camera.getViewMatrix())
+            .mul(shape.getTransformMatrix())
             .rotateX(rotationX)
             .rotateY(rotationY)
 
-        val projectedVertices = cube.vertices.map { vertex ->
+        val projectedVertices = shape.mesh.vertices.map { vertex ->
             val transformed = Vector3f()
             transform.transformPosition(vertex, transformed)
-
-            // Проверяем значение Z для корректной перспективной проекции
             val screenX = (transformed.x / transformed.z) * width / 2 + width / 2
             val screenY = -(transformed.y / transformed.z) * height / 2 + height / 2
             Vector3f(screenX, screenY, transformed.z)
         }
 
-        cube.faces.forEach { face ->
+        shape.mesh.faces.forEach { face ->
             val faceNormal = calculateFaceNormal(
-                cube.vertices[face[0]],
-                cube.vertices[face[1]],
-                cube.vertices[face[2]]
+                shape.mesh.vertices[face[0]],
+                shape.mesh.vertices[face[1]],
+                shape.mesh.vertices[face[2]]
             )
             val lightIntensity = max(0f, faceNormal.dot(light.direction))
 
