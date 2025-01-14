@@ -7,6 +7,9 @@ object IsometricWorldConstants {
     const val WORLD_WIDTH = 80
     const val WORLD_HEIGHT = 80
 
+    const val CAMERA_INITIAL_OFFSET_X = 0
+    const val CAMERA_INITIAL_OFFSET_Y = -500
+
     const val CHARACTER_INITIAL_X = 10
     const val CHARACTER_INITIAL_Y = 10
 
@@ -14,6 +17,8 @@ object IsometricWorldConstants {
 
     const val CAMERA_MOVEMENT_LENGTH_X = 20
     const val CAMERA_MOVEMENT_LENGTH_Y = 20
+
+    const val INITIAL_SCALE = 3.5
 
     const val ZOOM_FACTOR = 0.1
 
@@ -26,6 +31,7 @@ object IsometricWorldConstants {
     const val TREE2_TEXTURE_PATH = "src/main/resources/assets/textures/tree2.png"
     const val STONE_TEXTURE_PATH = "src/main/resources/assets/textures/stone.png"
     const val BIRD_TEXTURE_PATH = "src/main/resources/assets/textures/birdie.png"
+    const val WORLD_FILE_PATH = "src/main/resources/world/world.json"
 
     const val FOREST_BACKGROUND_SOUND_PATH = "src/main/resources/assets/sounds/forest.wav"
     const val FOOTSTEPS_SOUND_PATH = "src/main/resources/assets/sounds/footsteps.wav"

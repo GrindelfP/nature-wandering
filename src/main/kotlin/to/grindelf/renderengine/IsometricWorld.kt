@@ -1,14 +1,18 @@
 package to.grindelf.renderengine
 
 import to.grindelf.renderengine.IsometricWorldConstants.BIRD_TEXTURE_PATH
+import to.grindelf.renderengine.IsometricWorldConstants.CAMERA_INITIAL_OFFSET_X
+import to.grindelf.renderengine.IsometricWorldConstants.CAMERA_INITIAL_OFFSET_Y
 import to.grindelf.renderengine.IsometricWorldConstants.CAMERA_MOVEMENT_LENGTH_X
 import to.grindelf.renderengine.IsometricWorldConstants.CAMERA_MOVEMENT_LENGTH_Y
 import to.grindelf.renderengine.IsometricWorldConstants.CHARACTER_INITIAL_X
 import to.grindelf.renderengine.IsometricWorldConstants.CHARACTER_INITIAL_Y
+import to.grindelf.renderengine.IsometricWorldConstants.CHARACTER_SPEED
 import to.grindelf.renderengine.IsometricWorldConstants.CHARACTER_TEXTURE_PATH
 import to.grindelf.renderengine.IsometricWorldConstants.FOOTSTEPS_SOUND_PATH
 import to.grindelf.renderengine.IsometricWorldConstants.FOREST_BACKGROUND_SOUND_PATH
 import to.grindelf.renderengine.IsometricWorldConstants.GRASS_TEXTURE_PATH
+import to.grindelf.renderengine.IsometricWorldConstants.INITIAL_SCALE
 import to.grindelf.renderengine.IsometricWorldConstants.NUMBER_OF_BIRDS
 import to.grindelf.renderengine.IsometricWorldConstants.STONE_PROBABILITY
 import to.grindelf.renderengine.IsometricWorldConstants.STONE_TEXTURE_PATH
@@ -17,12 +21,14 @@ import to.grindelf.renderengine.IsometricWorldConstants.TREE2_PROBABILITY
 import to.grindelf.renderengine.IsometricWorldConstants.TREE2_TEXTURE_PATH
 import to.grindelf.renderengine.IsometricWorldConstants.TREE_PROBABILITY
 import to.grindelf.renderengine.IsometricWorldConstants.TREE_TEXTURE_PATH
+import to.grindelf.renderengine.IsometricWorldConstants.WORLD_FILE_PATH
 import to.grindelf.renderengine.IsometricWorldConstants.WORLD_HEIGHT
 import to.grindelf.renderengine.IsometricWorldConstants.WORLD_WIDTH
 import to.grindelf.renderengine.IsometricWorldConstants.ZOOM_FACTOR
 import to.grindelf.renderengine.IsometricWorldConstants.ZOOM_LOWER_LIMIT
 import to.grindelf.renderengine.IsometricWorldConstants.ZOOM_UPPER_LIMIT
-import to.grindelf.renderengine.IsometricWorldConstants.CHARACTER_SPEED
+import to.grindelf.renderengine.JsonOperator.loadWorldFromFile
+import to.grindelf.renderengine.JsonOperator.saveWorldToFile
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.Image
@@ -45,9 +51,11 @@ data class Bird(var x: Double, var y: Double, var dx: Double, var dy: Double)
 
 enum class TileType { GRASS, TREE, TREE2, STONE }
 
-class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener {
+class IsometricWorld (
+    createWorld: Boolean
+) : JPanel(), KeyListener, MouseWheelListener, MouseListener {
 
-    private val tiles = mutableListOf<Tile>()
+    internal val tiles = mutableListOf<Tile>()
     private lateinit var grassTexture: Image
     private lateinit var treeTexture: Image
     private lateinit var characterTexture: Image
@@ -55,12 +63,14 @@ class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener 
     private lateinit var stoneTexture: Image
     private lateinit var birdieTexture: Image
 
+    private val worldFile = File(WORLD_FILE_PATH)
+
     // Смещение "камеры"
-    private var offsetX = 0
-    private var offsetY = -300  // Сдвиг мира вниз
+    private var offsetX = CAMERA_INITIAL_OFFSET_X
+    private var offsetY = CAMERA_INITIAL_OFFSET_Y
 
     // Масштаб
-    private var scale = 2.0  // 1.0 - оригинальный размер, > 1.0 - увеличение, < 1.0 - уменьшение
+    private var scale = INITIAL_SCALE
 
     // Персонаж
     private var characterX = 0.0
@@ -77,19 +87,27 @@ class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener 
 
     init {
         loadTextures()
-        generateWorld()
+
+        // Check if the world file exists
+        if (!createWorld) {
+            // Load existing world
+            tiles.addAll(loadWorldFromFile(worldFile.path))
+        } else {
+            // Generate new world and save it
+            generateWorld()
+            saveWorldToFile(tiles, worldFile.path)
+        }
+
         spawnCharacter()
         playBackgroundSound()
         initializeStepSound()
         spawnBirds()
 
-        // Добавляем обработчики событий
         addKeyListener(this)
         addMouseWheelListener(this)
         addMouseListener(this)
         isFocusable = true
 
-        // Таймер для обновления персонажа
         Timer(32) {
             updateCharacter()
             updateBirds()
@@ -112,7 +130,7 @@ class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener 
     }
 
 
-    private fun generateWorld() {
+    internal fun generateWorld() {
         for (x in 0 until WORLD_WIDTH) {
             for (y in 0 until WORLD_HEIGHT) {
                 val randomValue = Random.nextFloat()
@@ -133,7 +151,8 @@ class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener 
 
     private fun playSound(soundFile: File, volume: Float = -30.0f) {
         try {
-            val audioInputStream: AudioInputStream = AudioSystem.getAudioInputStream(BufferedInputStream(soundFile.inputStream()))
+            val audioInputStream: AudioInputStream =
+                AudioSystem.getAudioInputStream(BufferedInputStream(soundFile.inputStream()))
             val clip: Clip = AudioSystem.getClip()
             clip.open(audioInputStream)
 
@@ -156,7 +175,8 @@ class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener 
     }
 
     private fun loadSound(soundFile: File, volume: Float = -10.0f): Clip {
-        val audioInputStream: AudioInputStream = AudioSystem.getAudioInputStream(BufferedInputStream(soundFile.inputStream()))
+        val audioInputStream: AudioInputStream =
+            AudioSystem.getAudioInputStream(BufferedInputStream(soundFile.inputStream()))
         val clip: Clip = AudioSystem.getClip()
         clip.open(audioInputStream)
         val gainControl = clip.getControl(FloatControl.Type.MASTER_GAIN) as FloatControl
