@@ -1,11 +1,15 @@
 package to.grindelf.renderengine
 
+import to.grindelf.renderengine.IsometricWorldConstants.BIRD_TEXTURE_PATH
 import to.grindelf.renderengine.IsometricWorldConstants.CAMERA_MOVEMENT_LENGTH_X
 import to.grindelf.renderengine.IsometricWorldConstants.CAMERA_MOVEMENT_LENGTH_Y
 import to.grindelf.renderengine.IsometricWorldConstants.CHARACTER_INITIAL_X
 import to.grindelf.renderengine.IsometricWorldConstants.CHARACTER_INITIAL_Y
 import to.grindelf.renderengine.IsometricWorldConstants.CHARACTER_TEXTURE_PATH
+import to.grindelf.renderengine.IsometricWorldConstants.FOOTSTEPS_SOUND_PATH
+import to.grindelf.renderengine.IsometricWorldConstants.FOREST_BACKGROUND_SOUND_PATH
 import to.grindelf.renderengine.IsometricWorldConstants.GRASS_TEXTURE_PATH
+import to.grindelf.renderengine.IsometricWorldConstants.NUMBER_OF_BIRDS
 import to.grindelf.renderengine.IsometricWorldConstants.STONE_PROBABILITY
 import to.grindelf.renderengine.IsometricWorldConstants.STONE_TEXTURE_PATH
 import to.grindelf.renderengine.IsometricWorldConstants.TILE_SIZE
@@ -18,18 +22,27 @@ import to.grindelf.renderengine.IsometricWorldConstants.WORLD_WIDTH
 import to.grindelf.renderengine.IsometricWorldConstants.ZOOM_FACTOR
 import to.grindelf.renderengine.IsometricWorldConstants.ZOOM_LOWER_LIMIT
 import to.grindelf.renderengine.IsometricWorldConstants.ZOOM_UPPER_LIMIT
+import to.grindelf.renderengine.IsometricWorldConstants.CHARACTER_SPEED
+import java.awt.AlphaComposite
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.Image
 import java.awt.event.*
+import java.io.BufferedInputStream
 import java.io.File
 import javax.imageio.ImageIO
+import javax.sound.sampled.AudioInputStream
+import javax.sound.sampled.AudioSystem
+import javax.sound.sampled.Clip
+import javax.sound.sampled.FloatControl
 import javax.swing.JPanel
 import javax.swing.Timer
 import kotlin.math.sqrt
 import kotlin.random.Random
 
 data class Tile(val x: Int, val y: Int, val type: TileType)
+
+data class Bird(var x: Double, var y: Double, var dx: Double, var dy: Double)
 
 enum class TileType { GRASS, TREE, TREE2, STONE }
 
@@ -41,6 +54,7 @@ class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener 
     private lateinit var characterTexture: Image
     private lateinit var tree2Texture: Image
     private lateinit var stoneTexture: Image
+    private lateinit var birdieTexture: Image
 
     // Смещение "камеры"
     private var offsetX = 0
@@ -54,18 +68,21 @@ class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener 
     private var characterY = 0.0
     private var targetX: Double? = null
     private var targetY: Double? = null
-    private val characterSpeed = 0.3 // Скорость персонажа (пикселей за тик)
     private var isMoving = false
 
+    private val birds = mutableListOf<Bird>()
+
+    // Sound Clips
+    private lateinit var stepClip: Clip
+    private var isStepSoundPlaying = false
+
     init {
-        // Загрузка текстур
         loadTextures()
-
-        // Генерация карты
         generateWorld()
-
-        // Установка персонажа в центр карты
-        placeCharacterInCenter()
+        spawnCharacter()
+        playBackgroundSound()
+        initializeStepSound()
+        spawnBirds()
 
         // Добавляем обработчики событий
         addKeyListener(this)
@@ -74,7 +91,10 @@ class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener 
         isFocusable = true
 
         // Таймер для обновления персонажа
-        Timer(32) { updateCharacter() }.start()
+        Timer(32) {
+            updateCharacter()
+            updateBirds()
+        }.start()
     }
 
     private fun loadTextures() {
@@ -85,6 +105,7 @@ class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener 
             tree2Texture = ImageIO.read(File(TREE2_TEXTURE_PATH))
             stoneTexture = ImageIO.read(File(STONE_TEXTURE_PATH))
             characterTexture = ImageIO.read(File(CHARACTER_TEXTURE_PATH))
+            birdieTexture = ImageIO.read(File(BIRD_TEXTURE_PATH))
         } catch (e: Exception) {
             e.printStackTrace()
             throw RuntimeException("Не удалось загрузить текстуры!")
@@ -107,7 +128,61 @@ class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener 
         }
     }
 
-    private fun placeCharacterInCenter() {
+    private fun playBackgroundSound() {
+        playSound(soundFile = File(FOREST_BACKGROUND_SOUND_PATH))
+    }
+
+    private fun playSound(soundFile: File, volume: Float = -30.0f) {
+        try {
+            val audioInputStream: AudioInputStream = AudioSystem.getAudioInputStream(BufferedInputStream(soundFile.inputStream()))
+            val clip: Clip = AudioSystem.getClip()
+            clip.open(audioInputStream)
+
+            val gainControl = clip.getControl(FloatControl.Type.MASTER_GAIN) as FloatControl
+            gainControl.value = volume
+
+            clip.loop(Clip.LOOP_CONTINUOUSLY) // Loop the sound continuously
+            clip.start()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun initializeStepSound() {
+        stepClip = loadSound(File(FOOTSTEPS_SOUND_PATH))
+        stepClip.loop(Clip.LOOP_CONTINUOUSLY)
+
+        playStepSound()
+        stopStepSound()
+    }
+
+    private fun loadSound(soundFile: File, volume: Float = -10.0f): Clip {
+        val audioInputStream: AudioInputStream = AudioSystem.getAudioInputStream(BufferedInputStream(soundFile.inputStream()))
+        val clip: Clip = AudioSystem.getClip()
+        clip.open(audioInputStream)
+        val gainControl = clip.getControl(FloatControl.Type.MASTER_GAIN) as FloatControl
+        gainControl.value = volume
+        return clip
+    }
+
+    private fun playStepSound() {
+        stepClip.loop(Clip.LOOP_CONTINUOUSLY)
+
+        if (!isStepSoundPlaying) {
+            stepClip.start()
+            isStepSoundPlaying = true
+        }
+    }
+
+    private fun stopStepSound() {
+        if (isStepSoundPlaying) {
+            stepClip.stop()
+            stepClip.framePosition = 0 // Reset to the beginning
+            isStepSoundPlaying = false
+        }
+    }
+
+    private fun spawnCharacter() {
         // Устанавливаем персонажа в центр карты
         val centerTile = tiles.find { it.x == CHARACTER_INITIAL_X && it.y == CHARACTER_INITIAL_Y }
         characterX = centerTile?.x?.toDouble() ?: 0.0
@@ -115,24 +190,58 @@ class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener 
     }
 
     private fun updateCharacter() {
-        // Если персонаж должен двигаться
         if (isMoving && targetX != null && targetY != null) {
+            playStepSound()
+
             val dx = targetX!! - characterX
             val dy = targetY!! - characterY
             val distance = sqrt(dx * dx + dy * dy)
 
-            if (distance < characterSpeed) {
-                // Если персонаж дошёл до точки
+            if (distance < CHARACTER_SPEED) {
                 characterX = targetX!!
                 characterY = targetY!!
                 isMoving = false
+                stopStepSound()
             } else {
-                // Двигаем персонажа в направлении точки
-                characterX += (dx / distance) * characterSpeed
-                characterY += (dy / distance) * characterSpeed
+                characterX += (dx / distance) * CHARACTER_SPEED
+                characterY += (dy / distance) * CHARACTER_SPEED
             }
             repaint()
+        } else {
+            stopStepSound()
         }
+    }
+
+
+    private fun spawnBirds() {
+        repeat(NUMBER_OF_BIRDS) {
+            birds.add(
+                Bird(
+                    x = Random.nextDouble(0.0, WORLD_WIDTH.toDouble()),
+                    y = Random.nextDouble(0.0, WORLD_HEIGHT.toDouble()),
+                    dx = Random.nextDouble(-0.1, 0.1),
+                    dy = Random.nextDouble(-0.1, 0.1)
+                )
+            )
+        }
+    }
+
+    private fun updateBirds() {
+        for (bird in birds) {
+            bird.x += bird.dx
+            bird.y += bird.dy
+
+            // Проверка на выход за пределы карты и смена направления
+            if (bird.x < 0 || bird.x >= WORLD_WIDTH) {
+                bird.dx = -bird.dx
+                bird.x = bird.x.coerceIn(0.0, WORLD_WIDTH.toDouble())
+            }
+            if (bird.y < 0 || bird.y >= WORLD_HEIGHT) {
+                bird.dy = -bird.dy
+                bird.y = bird.y.coerceIn(0.0, WORLD_HEIGHT.toDouble())
+            }
+        }
+        repaint()
     }
 
     override fun paintComponent(g: Graphics) {
@@ -141,8 +250,17 @@ class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener 
 
         // Масштабируем графику
         g2d.scale(scale, scale)
+        g2d.composite = AlphaComposite.SrcOver
 
-        // Отрисовка мира с учетом смещения камеры
+//        val grassWidth = grassTexture.getWidth(null)
+//        val grassHeight = grassTexture.getHeight(null)
+//
+//        for (x in 0 until (width / scale).toInt() step grassWidth) {
+//            for (y in 0 until (height / scale).toInt() step grassHeight) {
+//                g2d.drawImage(grassTexture, x, y, grassWidth, grassHeight, null)
+//            }
+//        }
+
         for (tile in tiles) {
             val screenX = ((tile.x - tile.y) * TILE_SIZE / 2 + width / 2 / scale + offsetX / scale).toInt()
             val screenY = ((tile.x + tile.y) * TILE_SIZE / 4 + offsetY / scale).toInt()
@@ -170,15 +288,39 @@ class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener 
                     )
                 }
 
+                else -> {}
+            }
+        }
+
+        // Отрисовка персонажа (после всех объектов)
+        val characterScreenX = ((characterX - characterY) * TILE_SIZE / 2 + width / 2 / scale + offsetX / scale).toInt()
+        val characterScreenY = ((characterX + characterY) * TILE_SIZE / 4 + offsetY / scale).toInt()
+        g2d.drawImage(
+            characterTexture,
+            characterScreenX - TILE_SIZE / 6,
+            characterScreenY - TILE_SIZE / 3,
+            TILE_SIZE / 3,
+            TILE_SIZE / 3,
+            null
+        )
+
+        // Теперь рисуем деревья, которые будут перекрывать фон
+        for (tile in tiles) {
+            val screenX = ((tile.x - tile.y) * TILE_SIZE / 2 + width / 2 / scale + offsetX / scale).toInt()
+            val screenY = ((tile.x + tile.y) * TILE_SIZE / 4 + offsetY / scale).toInt()
+
+            when (tile.type) {
                 TileType.TREE -> {
-                    g2d.drawImage(
-                        grassTexture,
-                        screenX - TILE_SIZE / 2,
-                        screenY - TILE_SIZE / 4,
-                        TILE_SIZE,
-                        TILE_SIZE / 2,
-                        null
-                    )
+//                    if (screenX != characterScreenX && screenY != characterScreenY) {
+//                        g2d.drawImage(
+//                            grassTexture,
+//                            screenX - TILE_SIZE / 2,
+//                            screenY - TILE_SIZE / 4,
+//                            TILE_SIZE,
+//                            TILE_SIZE / 2,
+//                            null
+//                        )
+//                    }
                     val treeHeight = TILE_SIZE
                     val treeWidth = TILE_SIZE / 2
                     g2d.drawImage(
@@ -192,14 +334,16 @@ class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener 
                 }
 
                 TileType.TREE2 -> {
-                    g2d.drawImage(
-                        grassTexture,
-                        screenX - TILE_SIZE / 2,
-                        screenY - TILE_SIZE / 4,
-                        TILE_SIZE,
-                        TILE_SIZE / 2,
-                        null
-                    )
+//                    if (screenX != characterScreenX && screenY != characterScreenY) {
+//                        g2d.drawImage(
+//                            grassTexture,
+//                            screenX - TILE_SIZE / 2,
+//                            screenY - TILE_SIZE / 4,
+//                            TILE_SIZE,
+//                            TILE_SIZE / 2,
+//                            null
+//                        )
+//                    }
                     val treeHeight = TILE_SIZE
                     val treeWidth = TILE_SIZE / 2
                     g2d.drawImage(
@@ -211,20 +355,23 @@ class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener 
                         null
                     )
                 }
+
+                else -> {}
             }
         }
 
-        // Отрисовка персонажа
-        val characterScreenX = ((characterX - characterY) * TILE_SIZE / 2 + width / 2 / scale + offsetX / scale).toInt()
-        val characterScreenY = ((characterX + characterY) * TILE_SIZE / 4 + offsetY / scale).toInt()
-        g2d.drawImage(
-            characterTexture,
-            characterScreenX - TILE_SIZE / 6,
-            characterScreenY - TILE_SIZE / 3,
-            TILE_SIZE / 3,
-            TILE_SIZE / 3,
-            null
-        )
+        for (bird in birds) {
+            val screenX = ((bird.x - bird.y) * TILE_SIZE / 2 + width / 2 / scale + offsetX / scale).toInt()
+            val screenY = ((bird.x + bird.y) * TILE_SIZE / 4 + offsetY / scale).toInt()
+            g2d.drawImage(
+                birdieTexture,
+                screenX - TILE_SIZE / 8,
+                screenY - TILE_SIZE / 8,
+                TILE_SIZE / 4,
+                TILE_SIZE / 4,
+                null
+            )
+        }
     }
 
 

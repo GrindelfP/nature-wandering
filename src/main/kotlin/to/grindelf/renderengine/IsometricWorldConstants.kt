@@ -10,6 +10,8 @@ object IsometricWorldConstants {
     const val CHARACTER_INITIAL_X = 10
     const val CHARACTER_INITIAL_Y = 10
 
+    const val CHARACTER_SPEED = 0.05
+
     const val CAMERA_MOVEMENT_LENGTH_X = 20
     const val CAMERA_MOVEMENT_LENGTH_Y = 20
 
@@ -23,6 +25,10 @@ object IsometricWorldConstants {
     const val TREE_TEXTURE_PATH = "src/main/resources/assets/textures/tree.png"
     const val TREE2_TEXTURE_PATH = "src/main/resources/assets/textures/tree2.png"
     const val STONE_TEXTURE_PATH = "src/main/resources/assets/textures/stone.png"
+    const val BIRD_TEXTURE_PATH = "src/main/resources/assets/textures/birdie.png"
+
+    const val FOREST_BACKGROUND_SOUND_PATH = "src/main/resources/assets/sounds/forest.wav"
+    const val FOOTSTEPS_SOUND_PATH = "src/main/resources/assets/sounds/footsteps.wav"
 
     const val STONE_PROBABILITY = 0.1
     const val TREE_PROBABILITY = 0.3
@@ -31,4 +37,6 @@ object IsometricWorldConstants {
     const val WINDOW_NAME = "2D Isometric World"
     const val WINDOW_WIDTH = 1600
     const val WINDOW_HEIGHT = 1200
+
+    const val NUMBER_OF_BIRDS = 50
 }
