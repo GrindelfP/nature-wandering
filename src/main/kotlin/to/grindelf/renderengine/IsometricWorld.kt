@@ -250,32 +250,21 @@ class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener 
 
         // Масштабируем графику
         g2d.scale(scale, scale)
-        g2d.composite = AlphaComposite.SrcOver
-
-//        val grassWidth = grassTexture.getWidth(null)
-//        val grassHeight = grassTexture.getHeight(null)
-//
-//        for (x in 0 until (width / scale).toInt() step grassWidth) {
-//            for (y in 0 until (height / scale).toInt() step grassHeight) {
-//                g2d.drawImage(grassTexture, x, y, grassWidth, grassHeight, null)
-//            }
-//        }
 
         for (tile in tiles) {
             val screenX = ((tile.x - tile.y) * TILE_SIZE / 2 + width / 2 / scale + offsetX / scale).toInt()
             val screenY = ((tile.x + tile.y) * TILE_SIZE / 4 + offsetY / scale).toInt()
 
+            g2d.drawImage(
+                grassTexture,
+                screenX - TILE_SIZE / 2,
+                screenY - TILE_SIZE / 4,
+                TILE_SIZE,
+                TILE_SIZE / 2,
+                null
+            )
+
             when (tile.type) {
-                TileType.GRASS -> {
-                    g2d.drawImage(
-                        grassTexture,
-                        screenX - TILE_SIZE / 2,
-                        screenY - TILE_SIZE / 4,
-                        TILE_SIZE,
-                        TILE_SIZE / 2,
-                        null
-                    )
-                }
 
                 TileType.STONE -> {
                     g2d.drawImage(
@@ -311,16 +300,6 @@ class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener 
 
             when (tile.type) {
                 TileType.TREE -> {
-//                    if (screenX != characterScreenX && screenY != characterScreenY) {
-//                        g2d.drawImage(
-//                            grassTexture,
-//                            screenX - TILE_SIZE / 2,
-//                            screenY - TILE_SIZE / 4,
-//                            TILE_SIZE,
-//                            TILE_SIZE / 2,
-//                            null
-//                        )
-//                    }
                     val treeHeight = TILE_SIZE
                     val treeWidth = TILE_SIZE / 2
                     g2d.drawImage(
@@ -334,16 +313,6 @@ class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener 
                 }
 
                 TileType.TREE2 -> {
-//                    if (screenX != characterScreenX && screenY != characterScreenY) {
-//                        g2d.drawImage(
-//                            grassTexture,
-//                            screenX - TILE_SIZE / 2,
-//                            screenY - TILE_SIZE / 4,
-//                            TILE_SIZE,
-//                            TILE_SIZE / 2,
-//                            null
-//                        )
-//                    }
                     val treeHeight = TILE_SIZE
                     val treeWidth = TILE_SIZE / 2
                     g2d.drawImage(
