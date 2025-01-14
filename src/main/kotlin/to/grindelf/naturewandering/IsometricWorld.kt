@@ -55,7 +55,12 @@ class IsometricWorld (
     createWorld: Boolean
 ) : JPanel(), KeyListener, MouseWheelListener, MouseListener {
 
-    internal val tiles = mutableListOf<Tile>()
+    // WORLD
+    private val tiles = mutableListOf<Tile>()
+    private val birds = mutableListOf<Bird>()
+    private val worldFile = File(WORLD_FILE_PATH)
+
+    // TEXTURES
     private lateinit var grassTexture: Image
     private lateinit var treeTexture: Image
     private lateinit var characterTexture: Image
@@ -63,27 +68,21 @@ class IsometricWorld (
     private lateinit var stoneTexture: Image
     private lateinit var birdieTexture: Image
 
-    private val worldFile = File(WORLD_FILE_PATH)
-
-    // Смещение "камеры"
-    private var offsetX = CAMERA_INITIAL_OFFSET_X
-    private var offsetY = CAMERA_INITIAL_OFFSET_Y
-
-    // Масштаб
-    private var scale = INITIAL_SCALE
-
-    // Персонаж
-    private var characterX = 0.0
-    private var characterY = 0.0
-    private var targetX: Double? = null
-    private var targetY: Double? = null
-    private var isMoving = false
-
-    private val birds = mutableListOf<Bird>()
-
-    // Sound Clips
+    // SOUNDS
     private lateinit var stepClip: Clip
     private var isStepSoundPlaying = false
+
+    // CAMERA
+    private var offsetX = CAMERA_INITIAL_OFFSET_X
+    private var offsetY = CAMERA_INITIAL_OFFSET_Y
+    private var scale = INITIAL_SCALE
+
+    // CHARACTER
+    private var characterX = 0.0 // current position x
+    private var characterY = 0.0 // current position y
+    private var targetX: Double? = null // where to go by x
+    private var targetY: Double? = null // where to go by y
+    private var isMoving = false
 
     init {
         loadTextures()
@@ -103,10 +102,7 @@ class IsometricWorld (
         initializeStepSound()
         spawnBirds()
 
-        addKeyListener(this)
-        addMouseWheelListener(this)
-        addMouseListener(this)
-        isFocusable = true
+        initializeListeners()
 
         Timer(32) {
             updateCharacter()
@@ -114,9 +110,15 @@ class IsometricWorld (
         }.start()
     }
 
+    private fun initializeListeners() {
+        addKeyListener(this)
+        addMouseWheelListener(this)
+        addMouseListener(this)
+        isFocusable = true
+    }
+
     private fun loadTextures() {
         try {
-            // Загрузка текстур из ресурсов
             grassTexture = ImageIO.read(File(GRASS_TEXTURE_PATH))
             treeTexture = ImageIO.read(File(TREE_TEXTURE_PATH))
             tree2Texture = ImageIO.read(File(TREE2_TEXTURE_PATH))
@@ -125,22 +127,21 @@ class IsometricWorld (
             birdieTexture = ImageIO.read(File(BIRD_TEXTURE_PATH))
         } catch (e: Exception) {
             e.printStackTrace()
-            throw RuntimeException("Не удалось загрузить текстуры!")
+            throw RuntimeException("Unable to load textures!!!")
         }
     }
-
 
     internal fun generateWorld() {
         for (x in 0 until WORLD_WIDTH) {
             for (y in 0 until WORLD_HEIGHT) {
                 val randomValue = Random.nextFloat()
                 val tileType = when {
-                    randomValue < STONE_PROBABILITY -> TileType.STONE  // Камень (10% вероятность)
-                    randomValue < TREE_PROBABILITY -> TileType.TREE   // Первый тип дерева (20% вероятность)
-                    randomValue < TREE2_PROBABILITY -> TileType.TREE2  // Второй тип дерева (20% вероятность)
-                    else -> TileType.GRASS              // Трава (50% вероятность)
+                    randomValue < STONE_PROBABILITY -> TileType.STONE  // Stone (10%)
+                    randomValue < TREE_PROBABILITY -> TileType.TREE   // Trees of the first type (20%)
+                    randomValue < TREE2_PROBABILITY -> TileType.TREE2  // Trees of the second type (20%)
+                    else -> TileType.GRASS // Grass (50%)
                 }
-                tiles.add(Tile(x, y, tileType))
+                tiles.add(Tile(x, y, tileType)) // Complete the list of tiles
             }
         }
     }
@@ -196,13 +197,12 @@ class IsometricWorld (
     private fun stopStepSound() {
         if (isStepSoundPlaying) {
             stepClip.stop()
-            stepClip.framePosition = 0 // Reset to the beginning
+            stepClip.framePosition = 0
             isStepSoundPlaying = false
         }
     }
 
     private fun spawnCharacter() {
-        // Устанавливаем персонажа в центр карты
         val centerTile = tiles.find { it.x == CHARACTER_INITIAL_X && it.y == CHARACTER_INITIAL_Y }
         characterX = centerTile?.x?.toDouble() ?: 0.0
         characterY = centerTile?.y?.toDouble() ?: 0.0
@@ -250,7 +250,6 @@ class IsometricWorld (
             bird.x += bird.dx
             bird.y += bird.dy
 
-            // Проверка на выход за пределы карты и смена направления
             if (bird.x < 0 || bird.x >= WORLD_WIDTH) {
                 bird.dx = -bird.dx
                 bird.x = bird.x.coerceIn(0.0, WORLD_WIDTH.toDouble())
@@ -267,13 +266,14 @@ class IsometricWorld (
         super.paintComponent(g)
         val g2d = g as Graphics2D
 
-        // Масштабируем графику
         g2d.scale(scale, scale)
 
+        // LAYER 1: SURFACE
         for (tile in tiles) {
             val screenX = ((tile.x - tile.y) * TILE_SIZE / 2 + width / 2 / scale + offsetX / scale).toInt()
             val screenY = ((tile.x + tile.y) * TILE_SIZE / 4 + offsetY / scale).toInt()
 
+            // Initially all tiles are drawn as grass
             g2d.drawImage(
                 grassTexture,
                 screenX - TILE_SIZE / 2,
@@ -285,6 +285,7 @@ class IsometricWorld (
 
             when (tile.type) {
 
+                // Next stones are drawn
                 TileType.STONE -> {
                     g2d.drawImage(
                         stoneTexture,
@@ -300,7 +301,7 @@ class IsometricWorld (
             }
         }
 
-        // Отрисовка персонажа (после всех объектов)
+        // LAYER 2: CHARACTER
         val characterScreenX = ((characterX - characterY) * TILE_SIZE / 2 + width / 2 / scale + offsetX / scale).toInt()
         val characterScreenY = ((characterX + characterY) * TILE_SIZE / 4 + offsetY / scale).toInt()
         g2d.drawImage(
@@ -312,7 +313,7 @@ class IsometricWorld (
             null
         )
 
-        // Теперь рисуем деревья, которые будут перекрывать фон
+        // LAYER 3: TREES
         for (tile in tiles) {
             val screenX = ((tile.x - tile.y) * TILE_SIZE / 2 + width / 2 / scale + offsetX / scale).toInt()
             val screenY = ((tile.x + tile.y) * TILE_SIZE / 4 + offsetY / scale).toInt()
@@ -348,6 +349,7 @@ class IsometricWorld (
             }
         }
 
+        // LAYER 4: BIRDS
         for (bird in birds) {
             val screenX = ((bird.x - bird.y) * TILE_SIZE / 2 + width / 2 / scale + offsetX / scale).toInt()
             val screenY = ((bird.x + bird.y) * TILE_SIZE / 4 + offsetY / scale).toInt()
@@ -363,49 +365,42 @@ class IsometricWorld (
     }
 
 
-    // Обработка нажатий клавиш
+    // INPUT HANDLING
     override fun keyPressed(e: KeyEvent) {
         when (e.keyCode) {
-            KeyEvent.VK_W -> offsetY += CAMERA_MOVEMENT_LENGTH_Y  // Движение вверх
-            KeyEvent.VK_S -> offsetY -= CAMERA_MOVEMENT_LENGTH_Y  // Движение вниз
-            KeyEvent.VK_A -> offsetX += CAMERA_MOVEMENT_LENGTH_X  // Движение влево
-            KeyEvent.VK_D -> offsetX -= CAMERA_MOVEMENT_LENGTH_X  // Движение вправо
+            KeyEvent.VK_W -> offsetY += CAMERA_MOVEMENT_LENGTH_Y  // UP
+            KeyEvent.VK_S -> offsetY -= CAMERA_MOVEMENT_LENGTH_Y  // DOWN
+            KeyEvent.VK_A -> offsetX += CAMERA_MOVEMENT_LENGTH_X  // LEFT
+            KeyEvent.VK_D -> offsetX -= CAMERA_MOVEMENT_LENGTH_X  // RIGHT
         }
-        repaint()  // Перерисовываем мир после изменения смещения
+        repaint()
     }
 
-    override fun keyReleased(e: KeyEvent) {}
-    override fun keyTyped(e: KeyEvent) {}
-
-    // Обработка клика мыши
     override fun mouseClicked(e: MouseEvent) {
-        // Координаты клика на экране с учетом масштаба
         val clickX = (e.x / scale) - (width / 2 / scale) - offsetX / scale
         val clickY = (e.y / scale) - offsetY / scale
 
-        // Преобразование экранных координат в изометрические координаты
         val worldX = ((clickX / (TILE_SIZE / 2)) + (clickY / (TILE_SIZE / 4))) / 2
         val worldY = ((clickY / (TILE_SIZE / 4)) - (clickX / (TILE_SIZE / 2))) / 2
 
-        // Устанавливаем целевую точку
         targetX = worldX
         targetY = worldY
         isMoving = true
     }
 
-    override fun mousePressed(e: MouseEvent) {}
-    override fun mouseReleased(e: MouseEvent) {}
-    override fun mouseEntered(e: MouseEvent) {}
-    override fun mouseExited(e: MouseEvent) {}
-
-    // Обработка прокрутки колесика мыши
     override fun mouseWheelMoved(e: MouseWheelEvent?) {
         val notches = e?.wheelRotation
         val zoomFactor = ZOOM_FACTOR
 
-        // Уменьшаем масштаб, если крутим вниз, увеличиваем - если вверх
         scale = (scale - (notches?.times(zoomFactor) ?: 0.0)).coerceIn(ZOOM_LOWER_LIMIT, ZOOM_UPPER_LIMIT)
 
-        repaint()  // Перерисовка после изменения масштаба
+        repaint()
     }
+
+    override fun keyReleased(e: KeyEvent) {}
+    override fun keyTyped(e: KeyEvent) {}
+    override fun mousePressed(e: MouseEvent) {}
+    override fun mouseReleased(e: MouseEvent) {}
+    override fun mouseEntered(e: MouseEvent) {}
+    override fun mouseExited(e: MouseEvent) {}
 }

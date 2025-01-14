@@ -8,7 +8,7 @@ import java.io.File
 import javax.swing.JFrame
 import javax.swing.JOptionPane
 
-object IsometricExample {
+object NatureWandering {
 
     @JvmStatic
     fun main(args: Array<String>) {
@@ -30,7 +30,7 @@ object IsometricExample {
         } else {
             createWorld = true
         }
-        panel = IsometricWorld(createWorld = createWorld)
+        panel = IsometricWorld(createWorld)
 
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         frame.setSize(WINDOW_WIDTH, WINDOW_HEIGHT)
