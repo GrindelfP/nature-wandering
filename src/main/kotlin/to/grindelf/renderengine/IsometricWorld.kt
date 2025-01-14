@@ -8,17 +8,6 @@ import to.grindelf.renderengine.IsometricWorldConstants.CHARACTER_TEXTURE_PATH
 import to.grindelf.renderengine.IsometricWorldConstants.GRASS_TEXTURE_PATH
 import to.grindelf.renderengine.IsometricWorldConstants.STONE_PROBABILITY
 import to.grindelf.renderengine.IsometricWorldConstants.STONE_TEXTURE_PATH
-import java.awt.Graphics
-import java.awt.Graphics2D
-import java.awt.Image
-import java.awt.event.*
-import java.io.File
-import javax.imageio.ImageIO
-import javax.swing.JPanel
-import javax.swing.Timer
-import kotlin.math.sqrt
-import kotlin.random.Random
-
 import to.grindelf.renderengine.IsometricWorldConstants.TILE_SIZE
 import to.grindelf.renderengine.IsometricWorldConstants.TREE2_PROBABILITY
 import to.grindelf.renderengine.IsometricWorldConstants.TREE2_TEXTURE_PATH
@@ -29,6 +18,16 @@ import to.grindelf.renderengine.IsometricWorldConstants.WORLD_WIDTH
 import to.grindelf.renderengine.IsometricWorldConstants.ZOOM_FACTOR
 import to.grindelf.renderengine.IsometricWorldConstants.ZOOM_LOWER_LIMIT
 import to.grindelf.renderengine.IsometricWorldConstants.ZOOM_UPPER_LIMIT
+import java.awt.Graphics
+import java.awt.Graphics2D
+import java.awt.Image
+import java.awt.event.*
+import java.io.File
+import javax.imageio.ImageIO
+import javax.swing.JPanel
+import javax.swing.Timer
+import kotlin.math.sqrt
+import kotlin.random.Random
 
 data class Tile(val x: Int, val y: Int, val type: TileType)
 
