@@ -1,4 +1,4 @@
-package to.grindelf.renderengine
+package to.grindelf.naturewandering
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.io.File

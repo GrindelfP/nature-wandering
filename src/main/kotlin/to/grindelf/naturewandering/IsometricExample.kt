@@ -1,9 +1,9 @@
-package to.grindelf.renderengine
+package to.grindelf.naturewandering
 
-import to.grindelf.renderengine.IsometricWorldConstants.WINDOW_HEIGHT
-import to.grindelf.renderengine.IsometricWorldConstants.WINDOW_NAME
-import to.grindelf.renderengine.IsometricWorldConstants.WINDOW_WIDTH
-import to.grindelf.renderengine.IsometricWorldConstants.WORLD_FILE_PATH
+import to.grindelf.naturewandering.IsometricWorldConstants.WINDOW_HEIGHT
+import to.grindelf.naturewandering.IsometricWorldConstants.WINDOW_NAME
+import to.grindelf.naturewandering.IsometricWorldConstants.WINDOW_WIDTH
+import to.grindelf.naturewandering.IsometricWorldConstants.WORLD_FILE_PATH
 import java.io.File
 import javax.swing.JFrame
 import javax.swing.JOptionPane

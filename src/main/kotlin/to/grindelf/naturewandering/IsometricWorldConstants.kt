@@ -1,4 +1,4 @@
-package to.grindelf.renderengine
+package to.grindelf.naturewandering
 
 object IsometricWorldConstants {
 

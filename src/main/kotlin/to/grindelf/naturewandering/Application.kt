@@ -1,4 +1,4 @@
-package to.grindelf.renderengine
+package to.grindelf.naturewandering
 
 import org.joml.Matrix4f
 import org.joml.Vector3f
