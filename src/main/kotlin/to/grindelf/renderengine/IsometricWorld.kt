@@ -23,7 +23,6 @@ import to.grindelf.renderengine.IsometricWorldConstants.ZOOM_FACTOR
 import to.grindelf.renderengine.IsometricWorldConstants.ZOOM_LOWER_LIMIT
 import to.grindelf.renderengine.IsometricWorldConstants.ZOOM_UPPER_LIMIT
 import to.grindelf.renderengine.IsometricWorldConstants.CHARACTER_SPEED
-import java.awt.AlphaComposite
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.Image
