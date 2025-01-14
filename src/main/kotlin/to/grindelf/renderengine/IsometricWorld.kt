@@ -1,5 +1,13 @@
 package to.grindelf.renderengine
 
+import to.grindelf.renderengine.IsometricWorldConstants.CAMERA_MOVEMENT_LENGTH_X
+import to.grindelf.renderengine.IsometricWorldConstants.CAMERA_MOVEMENT_LENGTH_Y
+import to.grindelf.renderengine.IsometricWorldConstants.CHARACTER_INITIAL_X
+import to.grindelf.renderengine.IsometricWorldConstants.CHARACTER_INITIAL_Y
+import to.grindelf.renderengine.IsometricWorldConstants.CHARACTER_TEXTURE_PATH
+import to.grindelf.renderengine.IsometricWorldConstants.GRASS_TEXTURE_PATH
+import to.grindelf.renderengine.IsometricWorldConstants.STONE_PROBABILITY
+import to.grindelf.renderengine.IsometricWorldConstants.STONE_TEXTURE_PATH
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.Image
@@ -11,6 +19,17 @@ import javax.swing.Timer
 import kotlin.math.sqrt
 import kotlin.random.Random
 
+import to.grindelf.renderengine.IsometricWorldConstants.TILE_SIZE
+import to.grindelf.renderengine.IsometricWorldConstants.TREE2_PROBABILITY
+import to.grindelf.renderengine.IsometricWorldConstants.TREE2_TEXTURE_PATH
+import to.grindelf.renderengine.IsometricWorldConstants.TREE_PROBABILITY
+import to.grindelf.renderengine.IsometricWorldConstants.TREE_TEXTURE_PATH
+import to.grindelf.renderengine.IsometricWorldConstants.WORLD_HEIGHT
+import to.grindelf.renderengine.IsometricWorldConstants.WORLD_WIDTH
+import to.grindelf.renderengine.IsometricWorldConstants.ZOOM_FACTOR
+import to.grindelf.renderengine.IsometricWorldConstants.ZOOM_LOWER_LIMIT
+import to.grindelf.renderengine.IsometricWorldConstants.ZOOM_UPPER_LIMIT
+
 data class Tile(val x: Int, val y: Int, val type: TileType)
 
 enum class TileType { GRASS, TREE, TREE2, STONE }
@@ -18,7 +37,6 @@ enum class TileType { GRASS, TREE, TREE2, STONE }
 class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener {
 
     private val tiles = mutableListOf<Tile>()
-    private val tileSize = 64  // Размер одного тайла (размер текстуры)
     private lateinit var grassTexture: Image
     private lateinit var treeTexture: Image
     private lateinit var characterTexture: Image
@@ -63,11 +81,11 @@ class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener 
     private fun loadTextures() {
         try {
             // Загрузка текстур из ресурсов
-            grassTexture = ImageIO.read(File("src/main/resources/assets/grass.png"))
-            treeTexture = ImageIO.read(File("src/main/resources/assets/tree.png"))
-            tree2Texture = ImageIO.read(File("src/main/resources/assets/tree2.png"))
-            stoneTexture = ImageIO.read(File("src/main/resources/assets/stone.png"))
-            characterTexture = ImageIO.read(File("src/main/resources/assets/character.png"))
+            grassTexture = ImageIO.read(File(GRASS_TEXTURE_PATH))
+            treeTexture = ImageIO.read(File(TREE_TEXTURE_PATH))
+            tree2Texture = ImageIO.read(File(TREE2_TEXTURE_PATH))
+            stoneTexture = ImageIO.read(File(STONE_TEXTURE_PATH))
+            characterTexture = ImageIO.read(File(CHARACTER_TEXTURE_PATH))
         } catch (e: Exception) {
             e.printStackTrace()
             throw RuntimeException("Не удалось загрузить текстуры!")
@@ -76,13 +94,13 @@ class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener 
 
 
     private fun generateWorld() {
-        for (x in 0 until 80) {
-            for (y in 0 until 80) {
+        for (x in 0 until WORLD_WIDTH) {
+            for (y in 0 until WORLD_HEIGHT) {
                 val randomValue = Random.nextFloat()
                 val tileType = when {
-                    randomValue < 0.1 -> TileType.STONE  // Камень (10% вероятность)
-                    randomValue < 0.3 -> TileType.TREE   // Первый тип дерева (20% вероятность)
-                    randomValue < 0.5 -> TileType.TREE2  // Второй тип дерева (20% вероятность)
+                    randomValue < STONE_PROBABILITY -> TileType.STONE  // Камень (10% вероятность)
+                    randomValue < TREE_PROBABILITY -> TileType.TREE   // Первый тип дерева (20% вероятность)
+                    randomValue < TREE2_PROBABILITY -> TileType.TREE2  // Второй тип дерева (20% вероятность)
                     else -> TileType.GRASS              // Трава (50% вероятность)
                 }
                 tiles.add(Tile(x, y, tileType))
@@ -92,7 +110,7 @@ class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener 
 
     private fun placeCharacterInCenter() {
         // Устанавливаем персонажа в центр карты
-        val centerTile = tiles.find { it.x == 10 && it.y == 10 }
+        val centerTile = tiles.find { it.x == CHARACTER_INITIAL_X && it.y == CHARACTER_INITIAL_Y }
         characterX = centerTile?.x?.toDouble() ?: 0.0
         characterY = centerTile?.y?.toDouble() ?: 0.0
     }
@@ -127,17 +145,17 @@ class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener 
 
         // Отрисовка мира с учетом смещения камеры
         for (tile in tiles) {
-            val screenX = ((tile.x - tile.y) * tileSize / 2 + width / 2 / scale + offsetX / scale).toInt()
-            val screenY = ((tile.x + tile.y) * tileSize / 4 + offsetY / scale).toInt()
+            val screenX = ((tile.x - tile.y) * TILE_SIZE / 2 + width / 2 / scale + offsetX / scale).toInt()
+            val screenY = ((tile.x + tile.y) * TILE_SIZE / 4 + offsetY / scale).toInt()
 
             when (tile.type) {
                 TileType.GRASS -> {
                     g2d.drawImage(
                         grassTexture,
-                        screenX - tileSize / 2,
-                        screenY - tileSize / 4,
-                        tileSize,
-                        tileSize / 2,
+                        screenX - TILE_SIZE / 2,
+                        screenY - TILE_SIZE / 4,
+                        TILE_SIZE,
+                        TILE_SIZE / 2,
                         null
                     )
                 }
@@ -145,10 +163,10 @@ class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener 
                 TileType.STONE -> {
                     g2d.drawImage(
                         stoneTexture,
-                        screenX - tileSize / 4,
-                        screenY - tileSize / 4,
-                        tileSize / 2,
-                        tileSize / 2,
+                        screenX - TILE_SIZE / 4,
+                        screenY - TILE_SIZE / 4,
+                        TILE_SIZE / 2,
+                        TILE_SIZE / 2,
                         null
                     )
                 }
@@ -156,14 +174,14 @@ class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener 
                 TileType.TREE -> {
                     g2d.drawImage(
                         grassTexture,
-                        screenX - tileSize / 2,
-                        screenY - tileSize / 4,
-                        tileSize,
-                        tileSize / 2,
+                        screenX - TILE_SIZE / 2,
+                        screenY - TILE_SIZE / 4,
+                        TILE_SIZE,
+                        TILE_SIZE / 2,
                         null
                     )
-                    val treeHeight = tileSize
-                    val treeWidth = tileSize / 2
+                    val treeHeight = TILE_SIZE
+                    val treeWidth = TILE_SIZE / 2
                     g2d.drawImage(
                         treeTexture,
                         screenX - treeWidth / 2,
@@ -177,14 +195,14 @@ class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener 
                 TileType.TREE2 -> {
                     g2d.drawImage(
                         grassTexture,
-                        screenX - tileSize / 2,
-                        screenY - tileSize / 4,
-                        tileSize,
-                        tileSize / 2,
+                        screenX - TILE_SIZE / 2,
+                        screenY - TILE_SIZE / 4,
+                        TILE_SIZE,
+                        TILE_SIZE / 2,
                         null
                     )
-                    val treeHeight = tileSize
-                    val treeWidth = tileSize / 2
+                    val treeHeight = TILE_SIZE
+                    val treeWidth = TILE_SIZE / 2
                     g2d.drawImage(
                         tree2Texture,
                         screenX - treeWidth / 2,
@@ -198,36 +216,26 @@ class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener 
         }
 
         // Отрисовка персонажа
-        val characterScreenX = ((characterX - characterY) * tileSize / 2 + width / 2 / scale + offsetX / scale).toInt()
-        val characterScreenY = ((characterX + characterY) * tileSize / 4 + offsetY / scale).toInt()
+        val characterScreenX = ((characterX - characterY) * TILE_SIZE / 2 + width / 2 / scale + offsetX / scale).toInt()
+        val characterScreenY = ((characterX + characterY) * TILE_SIZE / 4 + offsetY / scale).toInt()
         g2d.drawImage(
             characterTexture,
-            characterScreenX - tileSize / 6,
-            characterScreenY - tileSize / 3,
-            tileSize / 3,
-            tileSize / 3,
+            characterScreenX - TILE_SIZE / 6,
+            characterScreenY - TILE_SIZE / 3,
+            TILE_SIZE / 3,
+            TILE_SIZE / 3,
             null
         )
-
-
-        // --- Добавляем текст с инструкциями ---
-//            g2d.scale(1 / scale, 1 / scale) // Отключаем масштабирование для текста
-//            g2d.drawString("Управление камерой:", 10, 20)
-//            g2d.drawString("W/S/A/D - двигать камеру", 10, 40)
-//            g2d.drawString("Колесо мыши - зумировать", 10, 60)
-//            g2d.drawString("Управление персонажем:", 10, 80)
-//            g2d.drawString("ЛКМ - отправить персонажа в точку", 10, 100)
-
     }
 
 
     // Обработка нажатий клавиш
     override fun keyPressed(e: KeyEvent) {
         when (e.keyCode) {
-            KeyEvent.VK_W -> offsetY += 20  // Движение вверх
-            KeyEvent.VK_S -> offsetY -= 20  // Движение вниз
-            KeyEvent.VK_A -> offsetX += 20  // Движение влево
-            KeyEvent.VK_D -> offsetX -= 20  // Движение вправо
+            KeyEvent.VK_W -> offsetY += CAMERA_MOVEMENT_LENGTH_Y  // Движение вверх
+            KeyEvent.VK_S -> offsetY -= CAMERA_MOVEMENT_LENGTH_Y  // Движение вниз
+            KeyEvent.VK_A -> offsetX += CAMERA_MOVEMENT_LENGTH_X  // Движение влево
+            KeyEvent.VK_D -> offsetX -= CAMERA_MOVEMENT_LENGTH_X  // Движение вправо
         }
         repaint()  // Перерисовываем мир после изменения смещения
     }
@@ -242,8 +250,8 @@ class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener 
         val clickY = (e.y / scale) - offsetY / scale
 
         // Преобразование экранных координат в изометрические координаты
-        val worldX = ((clickX / (tileSize / 2)) + (clickY / (tileSize / 4))) / 2
-        val worldY = ((clickY / (tileSize / 4)) - (clickX / (tileSize / 2))) / 2
+        val worldX = ((clickX / (TILE_SIZE / 2)) + (clickY / (TILE_SIZE / 4))) / 2
+        val worldY = ((clickY / (TILE_SIZE / 4)) - (clickX / (TILE_SIZE / 2))) / 2
 
         // Устанавливаем целевую точку
         targetX = worldX
@@ -259,10 +267,10 @@ class IsometricWorld : JPanel(), KeyListener, MouseWheelListener, MouseListener 
     // Обработка прокрутки колесика мыши
     override fun mouseWheelMoved(e: MouseWheelEvent?) {
         val notches = e?.wheelRotation
-        val zoomFactor = 0.1  // Шаг изменения масштаба
+        val zoomFactor = ZOOM_FACTOR
 
         // Уменьшаем масштаб, если крутим вниз, увеличиваем - если вверх
-        scale = (scale - (notches?.times(zoomFactor) ?: 0.0)).coerceIn(1.0, 4.0)
+        scale = (scale - (notches?.times(zoomFactor) ?: 0.0)).coerceIn(ZOOM_LOWER_LIMIT, ZOOM_UPPER_LIMIT)
 
         repaint()  // Перерисовка после изменения масштаба
     }
