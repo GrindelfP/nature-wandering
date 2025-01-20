@@ -150,15 +150,18 @@ class IsometricWorld(
             val backgroundSoundInputStream = javaClass.getResourceAsStream(FOREST_BACKGROUND_SOUND_PATH)
             val stepsSoundInputStream = javaClass.getResourceAsStream(FOOTSTEPS_SOUND_PATH)
 
-            if (backgroundSoundInputStream != null && stepsSoundInputStream != null) {
-                backgroundSoundClip = initializeSoundClipFrom(backgroundSoundInputStream, volume = -30.0f)
-                stepSoundClip = initializeSoundClipFrom(stepsSoundInputStream, volume = -5.0f)
+            require (backgroundSoundInputStream != null ) {
+                "Background forest sounds stream is null!!"
             }
+            require(stepsSoundInputStream != null) {
+                "Step sounds stream is null!!"
+            }
+            backgroundSoundClip = initializeSoundClipFrom(backgroundSoundInputStream, volume = -30.0f)
+            stepSoundClip = initializeSoundClipFrom(stepsSoundInputStream, volume = -5.0f)
         } catch (e: Exception) {
             e.printStackTrace()
             error("Unable to load sounds!!")
         }
-
     }
 
     fun generateWorld() {
