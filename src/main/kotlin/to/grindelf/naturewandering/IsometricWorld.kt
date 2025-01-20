@@ -21,20 +21,17 @@ import to.grindelf.naturewandering.IsometricWorldConstants.TREE2_PROBABILITY
 import to.grindelf.naturewandering.IsometricWorldConstants.TREE2_TEXTURE_PATH
 import to.grindelf.naturewandering.IsometricWorldConstants.TREE_PROBABILITY
 import to.grindelf.naturewandering.IsometricWorldConstants.TREE_TEXTURE_PATH
-import to.grindelf.naturewandering.IsometricWorldConstants.WORLD_FILE_PATH
 import to.grindelf.naturewandering.IsometricWorldConstants.WORLD_HEIGHT
 import to.grindelf.naturewandering.IsometricWorldConstants.WORLD_WIDTH
 import to.grindelf.naturewandering.IsometricWorldConstants.ZOOM_FACTOR
 import to.grindelf.naturewandering.IsometricWorldConstants.ZOOM_LOWER_LIMIT
 import to.grindelf.naturewandering.IsometricWorldConstants.ZOOM_UPPER_LIMIT
-import to.grindelf.naturewandering.JsonOperator.loadWorldFromFile
-import to.grindelf.naturewandering.JsonOperator.saveWorldToFile
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.Image
 import java.awt.event.*
 import java.io.BufferedInputStream
-import java.io.File
+import java.io.InputStream
 import javax.imageio.ImageIO
 import javax.sound.sampled.AudioInputStream
 import javax.sound.sampled.AudioSystem
@@ -42,6 +39,7 @@ import javax.sound.sampled.Clip
 import javax.sound.sampled.FloatControl
 import javax.swing.JPanel
 import javax.swing.Timer
+import kotlin.jvm.javaClass
 import kotlin.math.sqrt
 import kotlin.random.Random
 
@@ -52,13 +50,14 @@ data class Bird(var x: Double, var y: Double, var dx: Double, var dy: Double)
 enum class TileType { GRASS, TREE, TREE2, STONE }
 
 class IsometricWorld (
-    createWorld: Boolean
+    createWorld: Boolean,
+    worldName: String = "none"
 ) : JPanel(), KeyListener, MouseWheelListener, MouseListener {
 
     // WORLD
     private val tiles = mutableListOf<Tile>()
     private val birds = mutableListOf<Bird>()
-    private val worldFile = File(WORLD_FILE_PATH)
+    // private val worldFile = File(WORLD_FILE_PATH)
 
     // TEXTURES
     private lateinit var grassTexture: Image
@@ -69,7 +68,11 @@ class IsometricWorld (
     private lateinit var birdieTexture: Image
 
     // SOUNDS
-    private lateinit var stepClip: Clip
+    /**
+     * Sound clip of a background forest ambience.
+     */
+    protected lateinit var backgroundSoundClip: Clip
+    private lateinit var stepSoundClip: Clip
     private var isStepSoundPlaying = false
 
     // CAMERA
@@ -86,20 +89,24 @@ class IsometricWorld (
 
     init {
         loadTextures()
+        loadSounds()
+//        // Check if the world file exists
+//        if (!createWorld) {
+//            // Load existing world
+//            val worldFileStream = javaClass.getResourceAsStream(buildWorldFilePath(worldName))
+//            tiles.addAll(loadWorldFromFile(worldFileStream))
+//        } else {
+//            // Generate new world and save it
+//            val worldFileStream = javaClass.getResourceAsStream(WORLD_FILE_PATH)
+//            generateWorld()
+//            saveWorldToFile(tiles, worldFileStream)
+//        }
 
-        // Check if the world file exists
-        if (!createWorld) {
-            // Load existing world
-            tiles.addAll(loadWorldFromFile(worldFile.path))
-        } else {
-            // Generate new world and save it
-            generateWorld()
-            saveWorldToFile(tiles, worldFile.path)
-        }
+        generateWorld()
 
         spawnCharacter()
         playBackgroundSound()
-        initializeStepSound()
+        // initializeStepSound()
         spawnBirds()
 
         initializeListeners()
@@ -108,6 +115,10 @@ class IsometricWorld (
             updateCharacter()
             updateBirds()
         }.start()
+    }
+
+    private fun buildWorldFilePath(worldName: String): String {
+        TODO()
     }
 
     private fun initializeListeners() {
@@ -119,16 +130,40 @@ class IsometricWorld (
 
     private fun loadTextures() {
         try {
-            grassTexture = ImageIO.read(File(GRASS_TEXTURE_PATH))
-            treeTexture = ImageIO.read(File(TREE_TEXTURE_PATH))
-            tree2Texture = ImageIO.read(File(TREE2_TEXTURE_PATH))
-            stoneTexture = ImageIO.read(File(STONE_TEXTURE_PATH))
-            characterTexture = ImageIO.read(File(CHARACTER_TEXTURE_PATH))
-            birdieTexture = ImageIO.read(File(BIRD_TEXTURE_PATH))
+            val grassTextureInputStream = javaClass.getResourceAsStream(GRASS_TEXTURE_PATH)
+            val treeTextureInputStream = javaClass.getResourceAsStream(TREE_TEXTURE_PATH)
+            val tree2TextureInputStream = javaClass.getResourceAsStream(TREE2_TEXTURE_PATH)
+            val stoneTextureInputStream = javaClass.getResourceAsStream(STONE_TEXTURE_PATH)
+            val characterTextureInputStream = javaClass.getResourceAsStream(CHARACTER_TEXTURE_PATH)
+            val birdieTextureInputStream = javaClass.getResourceAsStream(BIRD_TEXTURE_PATH)
+
+            grassTexture = ImageIO.read(grassTextureInputStream)
+            treeTexture = ImageIO.read(treeTextureInputStream)
+            tree2Texture = ImageIO.read(tree2TextureInputStream)
+            stoneTexture = ImageIO.read(stoneTextureInputStream)
+            characterTexture = ImageIO.read(characterTextureInputStream)
+            birdieTexture = ImageIO.read(birdieTextureInputStream)
         } catch (e: Exception) {
             e.printStackTrace()
-            throw RuntimeException("Unable to load textures!!!")
+            error("Unable to load textures!!")
         }
+    }
+
+    private fun loadSounds() {
+
+        try {
+            val backgroundSoundInputStream = javaClass.getResourceAsStream(FOREST_BACKGROUND_SOUND_PATH)
+            val stepsSoundInputStream = javaClass.getResourceAsStream(FOOTSTEPS_SOUND_PATH)
+
+            if (backgroundSoundInputStream != null && stepsSoundInputStream != null) {
+                backgroundSoundClip = initializeSoundClipFrom(backgroundSoundInputStream, volume = -30.0f)
+                stepSoundClip = initializeSoundClipFrom(stepsSoundInputStream, volume = -5.0f)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            error("Unable to load sounds!!")
+        }
+
     }
 
     internal fun generateWorld() {
@@ -146,58 +181,44 @@ class IsometricWorld (
         }
     }
 
+    /**
+     * Plays background sound taken from backgroundSoundClip property.
+     */
     private fun playBackgroundSound() {
-        playSound(soundFile = File(FOREST_BACKGROUND_SOUND_PATH))
+        backgroundSoundClip.loop(Clip.LOOP_CONTINUOUSLY)
     }
 
-    private fun playSound(soundFile: File, volume: Float = -30.0f) {
-        try {
-            val audioInputStream: AudioInputStream =
-                AudioSystem.getAudioInputStream(BufferedInputStream(soundFile.inputStream()))
-            val clip: Clip = AudioSystem.getClip()
-            clip.open(audioInputStream)
-
-            val gainControl = clip.getControl(FloatControl.Type.MASTER_GAIN) as FloatControl
-            gainControl.value = volume
-
-            clip.loop(Clip.LOOP_CONTINUOUSLY) // Loop the sound continuously
-            clip.start()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    private fun initializeStepSound() {
-        stepClip = loadSound(File(FOOTSTEPS_SOUND_PATH))
-        stepClip.loop(Clip.LOOP_CONTINUOUSLY)
-
-        playStepSound()
-        stopStepSound()
-    }
-
-    private fun loadSound(soundFile: File, volume: Float = -10.0f): Clip {
-        val audioInputStream: AudioInputStream =
-            AudioSystem.getAudioInputStream(BufferedInputStream(soundFile.inputStream()))
+    /**
+     * Function initializes sound clip from a provided input stream.
+     * @param soundInputStream stream from a sound resource
+     * @param volume the amount of volume to be set for the clip, default value is -10.0.
+     *
+     * @return sound clip from a provided stream with provided or default volume set.
+     */
+    private fun initializeSoundClipFrom(soundInputStream: InputStream, volume: Float = -10.0f): Clip {
         val clip: Clip = AudioSystem.getClip()
+
+        val audioInputStream: AudioInputStream = AudioSystem.getAudioInputStream(BufferedInputStream(soundInputStream))
         clip.open(audioInputStream)
         val gainControl = clip.getControl(FloatControl.Type.MASTER_GAIN) as FloatControl
         gainControl.value = volume
+
         return clip
     }
 
     private fun playStepSound() {
-        stepClip.loop(Clip.LOOP_CONTINUOUSLY)
+        stepSoundClip.loop(Clip.LOOP_CONTINUOUSLY)
 
         if (!isStepSoundPlaying) {
-            stepClip.start()
+            stepSoundClip.start()
             isStepSoundPlaying = true
         }
     }
 
     private fun stopStepSound() {
         if (isStepSoundPlaying) {
-            stepClip.stop()
-            stepClip.framePosition = 0
+            stepSoundClip.stop()
+            stepSoundClip.framePosition = 0
             isStepSoundPlaying = false
         }
     }

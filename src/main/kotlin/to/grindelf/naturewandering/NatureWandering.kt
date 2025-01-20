@@ -15,7 +15,10 @@ object NatureWandering {
         val frame = JFrame(WINDOW_NAME)
         val panel: IsometricWorld
         val createWorld: Boolean
-        if (File(WORLD_FILE_PATH).exists()) {
+
+        val worldFileStream = javaClass.getResourceAsStream("world/world.json")
+
+        if (worldFileStream != null) {
             val choice = JOptionPane.showOptionDialog(
                 null,
                 "Do you want to load an existing world or create a new one?",
@@ -38,3 +41,6 @@ object NatureWandering {
         frame.isVisible = true
     }
 }
+
+// TODO: fix world save file access problem
+// TODO: reorganize the assets deeper (classify sounds, textures into sub-cats)

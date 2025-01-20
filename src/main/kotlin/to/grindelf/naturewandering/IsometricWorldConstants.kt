@@ -25,16 +25,24 @@ object IsometricWorldConstants {
     const val ZOOM_LOWER_LIMIT = 1.0
     const val ZOOM_UPPER_LIMIT = 4.0
 
-    const val GRASS_TEXTURE_PATH = "src/main/resources/assets/textures/grass.png"
-    const val CHARACTER_TEXTURE_PATH = "src/main/resources/assets/textures/character.png"
-    const val TREE_TEXTURE_PATH = "src/main/resources/assets/textures/tree.png"
-    const val TREE2_TEXTURE_PATH = "src/main/resources/assets/textures/tree2.png"
-    const val STONE_TEXTURE_PATH = "src/main/resources/assets/textures/stone.png"
-    const val BIRD_TEXTURE_PATH = "src/main/resources/assets/textures/birdie.png"
-    const val WORLD_FILE_PATH = "src/main/resources/world/world.json"
+    const val GRASS_TEXTURE_PATH = "assets/textures/grass.png"
+    const val CHARACTER_TEXTURE_PATH = "assets/textures/character.png"
+    const val TREE_TEXTURE_PATH = "assets/textures/tree.png"
+    const val TREE2_TEXTURE_PATH = "assets/textures/tree2.png"
+    const val STONE_TEXTURE_PATH = "assets/textures/stone.png"
+    const val BIRD_TEXTURE_PATH = "assets/textures/birdie.png"
 
-    const val FOREST_BACKGROUND_SOUND_PATH = "src/main/resources/assets/sounds/forest.wav"
-    const val FOOTSTEPS_SOUND_PATH = "src/main/resources/assets/sounds/footsteps.wav"
+    const val GRASS_TEXTURES_PATH = "assets/textures/grass"
+    const val STONES_TEXTURES_PATH = "assets/textures/stones"
+    const val TREES_TEXTURES_PATH = "assets/textures/trees"
+    const val PORTAL_TEXTURES_PATH = "assets/textures/portal"
+    const val CHARACTER_TEXTURES_PATH ="assets/textures/character"
+    const val JACK_TEXTURES_PATH = "assets/textures/jack"
+
+    const val WORLD_FILE_PATH = "src/main/resources/to/grindelf/naturewandering/world/world.json"
+
+    const val FOREST_BACKGROUND_SOUND_PATH = "assets/sounds/forest.wav"
+    const val FOOTSTEPS_SOUND_PATH = "assets/sounds/footsteps.wav"
 
     const val STONE_PROBABILITY = 0.1
     const val TREE_PROBABILITY = 0.3

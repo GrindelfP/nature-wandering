@@ -2,16 +2,28 @@ package to.grindelf.naturewandering
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.io.File
+import java.io.InputStream
+import java.io.OutputStream
 
 object JsonOperator {
 
     private val mapper = jacksonObjectMapper()
 
-    fun saveWorldToFile(world: List<Tile>, filename: String) {
-        mapper.writeValue(File(filename), world)
+    fun saveWorldToFile(world: List<Tile>, outputStream: OutputStream?) {
+        if (outputStream != null) mapper.writeValue(outputStream, world)
+        else throw IllegalArgumentException("The output stream is null!!")
     }
 
-    fun loadWorldFromFile(filename: String): List<Tile> =
-        mapper.readValue(File(filename), Array<Tile>::class.java).toList()
+    fun loadWorldFromFile(inputStream: InputStream?): List<Tile> {
+        return if (inputStream != null) mapper.readValue(inputStream, Array<Tile>::class.java).toList()
+        else throw IllegalArgumentException("The input stream is null!!")
+    }
+
+    fun saveWorldToFile(world: List<Tile>, filepath: String) {
+        mapper.writeValue(File(filepath), world)
+    }
+
+    fun loadWorldFromFile(filepath: String): List<Tile> =
+        mapper.readValue(File(filepath), Array<Tile>::class.java).toList()
 
 }
