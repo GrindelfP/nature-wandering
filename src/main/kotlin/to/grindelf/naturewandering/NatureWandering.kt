@@ -3,8 +3,7 @@ package to.grindelf.naturewandering
 import to.grindelf.naturewandering.IsometricWorldConstants.WINDOW_HEIGHT
 import to.grindelf.naturewandering.IsometricWorldConstants.WINDOW_NAME
 import to.grindelf.naturewandering.IsometricWorldConstants.WINDOW_WIDTH
-import to.grindelf.naturewandering.IsometricWorldConstants.WORLD_FILE_PATH
-import java.io.File
+import to.grindelf.naturewandering.datamanager.SavesManager
 import javax.swing.JFrame
 import javax.swing.JOptionPane
 
@@ -16,9 +15,7 @@ object NatureWandering {
         val panel: IsometricWorld
         val createWorld: Boolean
 
-        val worldFileStream = javaClass.getResourceAsStream("world/world.json")
-
-        if (worldFileStream != null) {
+        if (SavesManager.ifSavesDirExistAndNotEmpty()) {
             val choice = JOptionPane.showOptionDialog(
                 null,
                 "Do you want to load an existing world or create a new one?",

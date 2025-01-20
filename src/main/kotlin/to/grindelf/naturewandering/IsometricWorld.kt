@@ -26,11 +26,14 @@ import to.grindelf.naturewandering.IsometricWorldConstants.WORLD_WIDTH
 import to.grindelf.naturewandering.IsometricWorldConstants.ZOOM_FACTOR
 import to.grindelf.naturewandering.IsometricWorldConstants.ZOOM_LOWER_LIMIT
 import to.grindelf.naturewandering.IsometricWorldConstants.ZOOM_UPPER_LIMIT
+import to.grindelf.naturewandering.JsonOperator.saveWorldToFile
+import to.grindelf.naturewandering.datamanager.SavesManager
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.Image
 import java.awt.event.*
 import java.io.BufferedInputStream
+import java.io.File
 import java.io.InputStream
 import javax.imageio.ImageIO
 import javax.sound.sampled.AudioInputStream
@@ -39,7 +42,6 @@ import javax.sound.sampled.Clip
 import javax.sound.sampled.FloatControl
 import javax.swing.JPanel
 import javax.swing.Timer
-import kotlin.jvm.javaClass
 import kotlin.math.sqrt
 import kotlin.random.Random
 
@@ -49,9 +51,9 @@ data class Bird(var x: Double, var y: Double, var dx: Double, var dy: Double)
 
 enum class TileType { GRASS, TREE, TREE2, STONE }
 
-class IsometricWorld (
+class IsometricWorld(
     createWorld: Boolean,
-    worldName: String = "none"
+    worldName: String = "world"
 ) : JPanel(), KeyListener, MouseWheelListener, MouseListener {
 
     // WORLD
@@ -71,7 +73,7 @@ class IsometricWorld (
     /**
      * Sound clip of a background forest ambience.
      */
-    protected lateinit var backgroundSoundClip: Clip
+    private lateinit var backgroundSoundClip: Clip
     private lateinit var stepSoundClip: Clip
     private var isStepSoundPlaying = false
 
@@ -90,23 +92,21 @@ class IsometricWorld (
     init {
         loadTextures()
         loadSounds()
-//        // Check if the world file exists
-//        if (!createWorld) {
-//            // Load existing world
-//            val worldFileStream = javaClass.getResourceAsStream(buildWorldFilePath(worldName))
-//            tiles.addAll(loadWorldFromFile(worldFileStream))
-//        } else {
-//            // Generate new world and save it
-//            val worldFileStream = javaClass.getResourceAsStream(WORLD_FILE_PATH)
-//            generateWorld()
-//            saveWorldToFile(tiles, worldFileStream)
-//        }
 
-        generateWorld()
+        // Check if the world file exists
+        if (createWorld) {
+            // Generate new world and save it
+            val newWorldFile = SavesManager.createSaveFile(worldName)
+            generateWorld()
+            saveWorldToFile(tiles, newWorldFile)
+        } else {
+            // Load existing world
+            val worldFile = SavesManager.getSaveFile(worldName)
+            loadWorldFrom(worldFile)
+        }
 
         spawnCharacter()
         playBackgroundSound()
-        // initializeStepSound()
         spawnBirds()
 
         initializeListeners()
@@ -115,10 +115,6 @@ class IsometricWorld (
             updateCharacter()
             updateBirds()
         }.start()
-    }
-
-    private fun buildWorldFilePath(worldName: String): String {
-        TODO()
     }
 
     private fun initializeListeners() {
@@ -166,7 +162,7 @@ class IsometricWorld (
 
     }
 
-    internal fun generateWorld() {
+    fun generateWorld() {
         for (x in 0 until WORLD_WIDTH) {
             for (y in 0 until WORLD_HEIGHT) {
                 val randomValue = Random.nextFloat()
@@ -179,6 +175,10 @@ class IsometricWorld (
                 tiles.add(Tile(x, y, tileType)) // Complete the list of tiles
             }
         }
+    }
+
+    fun loadWorldFrom(worldFile: File) {
+        tiles.addAll(JsonOperator.loadWorldFromFile(worldFile))
     }
 
     /**

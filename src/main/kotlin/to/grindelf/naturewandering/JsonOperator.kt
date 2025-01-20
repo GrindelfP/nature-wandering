@@ -26,4 +26,11 @@ object JsonOperator {
     fun loadWorldFromFile(filepath: String): List<Tile> =
         mapper.readValue(File(filepath), Array<Tile>::class.java).toList()
 
+    fun saveWorldToFile(world: List<Tile>, file: File) {
+        mapper.writeValue(file, world)
+    }
+
+    fun loadWorldFromFile(file: File): List<Tile> =
+        mapper.readValue(file, Array<Tile>::class.java).toList()
+
 }

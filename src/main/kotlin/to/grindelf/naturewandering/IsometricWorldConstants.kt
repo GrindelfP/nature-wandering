@@ -36,10 +36,8 @@ object IsometricWorldConstants {
     const val STONES_TEXTURES_PATH = "assets/textures/stones"
     const val TREES_TEXTURES_PATH = "assets/textures/trees"
     const val PORTAL_TEXTURES_PATH = "assets/textures/portal"
-    const val CHARACTER_TEXTURES_PATH ="assets/textures/character"
+    const val CHARACTER_TEXTURES_PATH = "assets/textures/character"
     const val JACK_TEXTURES_PATH = "assets/textures/jack"
-
-    const val WORLD_FILE_PATH = "src/main/resources/to/grindelf/naturewandering/world/world.json"
 
     const val FOREST_BACKGROUND_SOUND_PATH = "assets/sounds/forest.wav"
     const val FOOTSTEPS_SOUND_PATH = "assets/sounds/footsteps.wav"
