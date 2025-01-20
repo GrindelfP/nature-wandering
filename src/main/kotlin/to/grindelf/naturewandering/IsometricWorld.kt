@@ -59,7 +59,6 @@ class IsometricWorld(
     // WORLD
     private val tiles = mutableListOf<Tile>()
     private val birds = mutableListOf<Bird>()
-    // private val worldFile = File(WORLD_FILE_PATH)
 
     // TEXTURES
     private lateinit var grassTexture: Image
