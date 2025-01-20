@@ -25,6 +25,8 @@ object IsometricWorldConstants {
     const val ZOOM_LOWER_LIMIT = 1.0
     const val ZOOM_UPPER_LIMIT = 4.0
 
+    const val SAVES_PATH = "GrindelfStudios/NatureWondering/saves"
+
     const val GRASS_TEXTURE_PATH = "assets/textures/grass.png"
     const val CHARACTER_TEXTURE_PATH = "assets/textures/character.png"
     const val TREE_TEXTURE_PATH = "assets/textures/tree.png"

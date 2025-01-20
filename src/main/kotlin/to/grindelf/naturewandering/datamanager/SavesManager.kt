@@ -1,5 +1,6 @@
 package to.grindelf.naturewandering.datamanager
 
+import to.grindelf.naturewandering.IsometricWorldConstants.SAVES_PATH
 import java.io.File
 
 object SavesManager {
@@ -39,7 +40,7 @@ object SavesManager {
     }
 
     fun getSavesDirectory(): File {
-        val savesDir = File(getDocumentsDirectory(), "Grindelf-Studios/NatureWondering/saves")
+        val savesDir = File(getDocumentsDirectory(), SAVES_PATH)
         if (!savesDir.exists()) {
             savesDir.mkdirs() // Create directory structure if it doesn't exist
         }
@@ -54,5 +55,4 @@ object SavesManager {
 
         return exists
     }
-
 }
