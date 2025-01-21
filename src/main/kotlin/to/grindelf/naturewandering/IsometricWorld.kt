@@ -93,6 +93,9 @@ class IsometricWorld(
     private var targetY: Double? = null // where to go by y
     private var isMoving = false
 
+    // GAME STATE
+    private var paused: Boolean
+
     init {
         loadTextures()
         loadSounds()
@@ -115,10 +118,14 @@ class IsometricWorld(
 
         initializeListeners()
 
+        paused = false
+
+
         Timer(32) {
             updateCharacter()
             updateBirds()
         }.start()
+
     }
 
     private fun initializeListeners() {
@@ -237,7 +244,7 @@ class IsometricWorld(
     }
 
     private fun updateCharacter() {
-        if (isMoving && targetX != null && targetY != null) {
+        if (!paused && isMoving && targetX != null && targetY != null) {
             playStepSound()
 
             val dx = targetX!! - characterX
@@ -274,20 +281,24 @@ class IsometricWorld(
     }
 
     private fun updateBirds() {
-        for (bird in birds) {
-            bird.x += bird.dx
-            bird.y += bird.dy
 
-            if (bird.x < 0 || bird.x >= WORLD_WIDTH) {
-                bird.dx = -bird.dx
-                bird.x = bird.x.coerceIn(0.0, WORLD_WIDTH.toDouble())
+        if (!paused) {
+
+            for (bird in birds) {
+                bird.x += bird.dx
+                bird.y += bird.dy
+
+                if (bird.x < 0 || bird.x >= WORLD_WIDTH) {
+                    bird.dx = -bird.dx
+                    bird.x = bird.x.coerceIn(0.0, WORLD_WIDTH.toDouble())
+                }
+                if (bird.y < 0 || bird.y >= WORLD_HEIGHT) {
+                    bird.dy = -bird.dy
+                    bird.y = bird.y.coerceIn(0.0, WORLD_HEIGHT.toDouble())
+                }
             }
-            if (bird.y < 0 || bird.y >= WORLD_HEIGHT) {
-                bird.dy = -bird.dy
-                bird.y = bird.y.coerceIn(0.0, WORLD_HEIGHT.toDouble())
-            }
+            repaint()
         }
-        repaint()
     }
 
     override fun paintComponent(g: Graphics) {
@@ -401,7 +412,13 @@ class IsometricWorld(
             KeyEvent.VK_S -> offsetY -= CAMERA_MOVEMENT_LENGTH_Y  // DOWN
             KeyEvent.VK_A -> offsetX += CAMERA_MOVEMENT_LENGTH_X  // LEFT
             KeyEvent.VK_D -> offsetX -= CAMERA_MOVEMENT_LENGTH_X  // RIGHT
-            KeyEvent.VK_ESCAPE -> showPauseMenu()  // Show the pause menu on ESC key press
+            KeyEvent.VK_ESCAPE -> {
+                if (!paused) {
+                    showPauseMenu()
+                } else {
+                    paused = false
+                }
+            }  // Show the pause menu on ESC key press
         }
         repaint()
     }
@@ -409,6 +426,8 @@ class IsometricWorld(
     private fun showPauseMenu() {
         // Options for the pause menu
         val options = arrayOf("Continue", "Back to Main Menu", "Exit Game")
+
+        this.paused = true
 
         // Show the dialog with buttons
         val choice = JOptionPane.showOptionDialog(
@@ -423,7 +442,9 @@ class IsometricWorld(
         )
 
         when (choice) {
-            0 -> {}  // Continue: Do nothing, just close the menu
+            0 -> {
+                this.paused = false
+            }  // Continue: Do nothing, just close the menu
             1 -> backToMainMenu(frame, mainMenuPanel)  // Back to Main Menu
             2 -> exitGame()  // Exit the game
         }
@@ -471,7 +492,12 @@ class IsometricWorld(
         repaint()
     }
 
-    override fun keyReleased(e: KeyEvent) {}
+    override fun keyReleased(e: KeyEvent) {
+        when (e.keyCode) {
+            KeyEvent.VK_ESCAPE -> paused = false
+        }
+    }
+
     override fun keyTyped(e: KeyEvent) {}
     override fun mousePressed(e: MouseEvent) {}
     override fun mouseReleased(e: MouseEvent) {}
