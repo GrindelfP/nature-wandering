@@ -40,10 +40,13 @@ import javax.sound.sampled.AudioInputStream
 import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.Clip
 import javax.sound.sampled.FloatControl
+import javax.swing.JFrame
+import javax.swing.JOptionPane
 import javax.swing.JPanel
 import javax.swing.Timer
 import kotlin.math.sqrt
 import kotlin.random.Random
+import kotlin.system.exitProcess
 
 data class Tile(val x: Int, val y: Int, val type: TileType)
 
@@ -53,7 +56,9 @@ enum class TileType { GRASS, TREE, TREE2, STONE }
 
 class IsometricWorld(
     createWorld: Boolean,
-    worldName: String = "world"
+    worldName: String = "world",
+    private val frame: JFrame,  // Reference to the frame
+    private val mainMenuPanel: JPanel  // Reference to the main menu panel
 ) : JPanel(), KeyListener, MouseWheelListener, MouseListener {
 
     // WORLD
@@ -150,10 +155,10 @@ class IsometricWorld(
             val backgroundSoundInputStream = javaClass.getResourceAsStream(FOREST_BACKGROUND_SOUND_PATH)
             val stepsSoundInputStream = javaClass.getResourceAsStream(FOOTSTEPS_SOUND_PATH)
 
-            require (backgroundSoundInputStream != null ) {
+            requireNotNull(backgroundSoundInputStream) {
                 "Background forest sounds stream is null!!"
             }
-            require(stepsSoundInputStream != null) {
+            requireNotNull(stepsSoundInputStream) {
                 "Step sounds stream is null!!"
             }
             backgroundSoundClip = initializeSoundClipFrom(backgroundSoundInputStream, volume = -30.0f)
@@ -325,7 +330,8 @@ class IsometricWorld(
         }
 
         // LAYER 2: CHARACTER
-        val characterScreenX = ((characterX - characterY) * TILE_SIZE / 2 + width / 2 / scale + offsetX / scale).toInt()
+        val characterScreenX =
+            ((characterX - characterY) * TILE_SIZE / 2 + width / 2 / scale + offsetX / scale).toInt()
         val characterScreenY = ((characterX + characterY) * TILE_SIZE / 4 + offsetY / scale).toInt()
         g2d.drawImage(
             characterTexture,
@@ -395,8 +401,53 @@ class IsometricWorld(
             KeyEvent.VK_S -> offsetY -= CAMERA_MOVEMENT_LENGTH_Y  // DOWN
             KeyEvent.VK_A -> offsetX += CAMERA_MOVEMENT_LENGTH_X  // LEFT
             KeyEvent.VK_D -> offsetX -= CAMERA_MOVEMENT_LENGTH_X  // RIGHT
+            KeyEvent.VK_ESCAPE -> showPauseMenu()  // Show the pause menu on ESC key press
         }
         repaint()
+    }
+
+    private fun showPauseMenu() {
+        // Options for the pause menu
+        val options = arrayOf("Continue", "Back to Main Menu", "Exit Game")
+
+        // Show the dialog with buttons
+        val choice = JOptionPane.showOptionDialog(
+            this,
+            "Game Paused",
+            "Pause Menu",
+            JOptionPane.DEFAULT_OPTION,
+            JOptionPane.INFORMATION_MESSAGE,
+            null,
+            options,
+            options[0]  // Default option to "Continue"
+        )
+
+        when (choice) {
+            0 -> {}  // Continue: Do nothing, just close the menu
+            1 -> backToMainMenu(frame, mainMenuPanel)  // Back to Main Menu
+            2 -> exitGame()  // Exit the game
+        }
+    }
+
+    private fun backToMainMenu(frame: JFrame, mainMenuPanel: JPanel) {
+        println("Returning to main menu...")
+
+        // Remove the current game panel
+        frame.contentPane.removeAll()
+
+        // Add the main menu panel back
+        frame.contentPane.add(mainMenuPanel)
+
+        // Revalidate and repaint to show the main menu
+        frame.revalidate()
+        frame.repaint()
+    }
+
+
+    private fun exitGame() {
+        // Exit the game by closing the application
+        println("Exiting the game...")
+        exitProcess(0)  // This will close the application
     }
 
     override fun mouseClicked(e: MouseEvent) {

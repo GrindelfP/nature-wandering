@@ -48,7 +48,7 @@ object IsometricWorldConstants {
     const val TREE_PROBABILITY = 0.3
     const val TREE2_PROBABILITY = 0.5
 
-    const val WINDOW_NAME = "2D Isometric World"
+    const val WINDOW_NAME = "Nature Wandering"
     const val WINDOW_WIDTH = 1600
     const val WINDOW_HEIGHT = 1200
 

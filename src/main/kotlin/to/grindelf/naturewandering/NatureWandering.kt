@@ -6,7 +6,7 @@ import to.grindelf.naturewandering.IsometricWorldConstants.WINDOW_WIDTH
 import to.grindelf.naturewandering.datamanager.SavesManager
 import java.awt.Color
 import java.awt.Font
-import java.awt.Rectangle
+import java.awt.Toolkit
 import javax.swing.JButton
 import javax.swing.JFrame
 import javax.swing.JOptionPane
@@ -31,16 +31,31 @@ object NatureWandering {
         mainMenuPanel.background = Color(120, 170, 120) // Dark background
         mainMenuPanel.layout = null  // Absolute positioning for a more customizable layout
 
+        // Get screen size from Toolkit
+        val screenSize = Toolkit.getDefaultToolkit().screenSize
+        val screenWidth = screenSize.width
+        val screenHeight = screenSize.height
+
+        // Center calculation
+        val buttonWidth = 300
+        val buttonHeight = 50
+        val verticalSpacing = 60 // Space between buttons
+
         // Add a "Create New World" button
         val createWorldButton = JButton("Create New World")
         createWorldButton.font = Font("Arial", Font.PLAIN, 24)
-        createWorldButton.bounds = Rectangle(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 3, 300, 50)
+        createWorldButton.setBounds(
+            (screenWidth - buttonWidth) / 2, // Center horizontally
+            (screenHeight - 2 * verticalSpacing - buttonHeight) / 3, // Center vertically
+            buttonWidth,
+            buttonHeight
+        )
         createWorldButton.addActionListener {
             createWorld = true
             worldName = showWorldNameDialog()
             if (!worldName.isNullOrEmpty()) {
                 frame.contentPane.removeAll()  // Remove the current menu
-                panel = IsometricWorld(createWorld, worldName!!)
+                panel = IsometricWorld(createWorld, worldName!!, frame, mainMenuPanel)
                 frame.add(panel)
                 frame.revalidate()
                 frame.repaint()
@@ -57,14 +72,19 @@ object NatureWandering {
         // Add a "Load Existing World" button if there are saved worlds
         val loadWorldButton = JButton("Load Existing World")
         loadWorldButton.font = Font("Arial", Font.PLAIN, 24)
-        loadWorldButton.bounds = Rectangle(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 3 + 50, 300, 50)
+        loadWorldButton.setBounds(
+            (screenWidth - buttonWidth) / 2, // Center horizontally
+            (screenHeight - verticalSpacing - buttonHeight) / 3 + verticalSpacing, // Center vertically with spacing
+            buttonWidth,
+            buttonHeight
+        )
         loadWorldButton.addActionListener {
             if (SavesManager.ifSavesDirExistAndNotEmpty()) {
                 worldName = showLoadWorldDialog()
                 if (worldName!!.isNotEmpty()) {
                     createWorld = false
                     frame.contentPane.removeAll()  // Remove the current menu
-                    panel = IsometricWorld(createWorld, worldName!!)
+                    panel = IsometricWorld(createWorld, worldName!!, frame, mainMenuPanel)
                     frame.add(panel)
                     frame.revalidate()
                     frame.repaint()
@@ -78,7 +98,12 @@ object NatureWandering {
         // Add an "Exit Game" button with confirmation dialog
         val exitButton = JButton("Exit Game")
         exitButton.font = Font("Arial", Font.PLAIN, 24)
-        exitButton.bounds = Rectangle(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 3 + 100, 300, 50)
+        exitButton.setBounds(
+            (screenWidth - buttonWidth) / 2, // Center horizontally
+            (screenHeight - buttonHeight) / 3 + 2 * verticalSpacing, // Center vertically with spacing
+            buttonWidth,
+            buttonHeight
+        )
         exitButton.addActionListener {
             val option = JOptionPane.showConfirmDialog(
                 null,
@@ -96,7 +121,7 @@ object NatureWandering {
         // Display the menu panel
         frame.contentPane.add(mainMenuPanel)
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
-        frame.setSize(WINDOW_WIDTH, WINDOW_HEIGHT)
+        frame.setSize(WINDOW_WIDTH, WINDOW_HEIGHT)  // You may keep your preferred window size here
         frame.isVisible = true
     }
 
