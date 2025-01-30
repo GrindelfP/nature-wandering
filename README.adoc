@@ -2,3 +2,5 @@
 
 == Description ==
 
+Nature Wandering is a 2D-isometric game in which you take control of a character named
+Alfred who wanders though the forests. You will meet several NPCs and complete quests given by them.

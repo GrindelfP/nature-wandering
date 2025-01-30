@@ -7,7 +7,7 @@ import to.grindelf.naturewandering.IsometricWorldConstants.CAMERA_MOVEMENT_LENGT
 import to.grindelf.naturewandering.IsometricWorldConstants.CAMERA_MOVEMENT_LENGTH_Y
 import to.grindelf.naturewandering.IsometricWorldConstants.CHARACTER_INITIAL_X
 import to.grindelf.naturewandering.IsometricWorldConstants.CHARACTER_INITIAL_Y
-import to.grindelf.naturewandering.IsometricWorldConstants.CHARACTER_SPEED
+import to.grindelf.naturewandering.IsometricWorldConstants.CHARACTER_SPEED_DEFAULT
 import to.grindelf.naturewandering.IsometricWorldConstants.CHARACTER_TEXTURE_PATH
 import to.grindelf.naturewandering.IsometricWorldConstants.FOOTSTEPS_SOUND_PATH
 import to.grindelf.naturewandering.IsometricWorldConstants.FOREST_BACKGROUND_SOUND_PATH
@@ -26,8 +26,11 @@ import to.grindelf.naturewandering.IsometricWorldConstants.WORLD_WIDTH
 import to.grindelf.naturewandering.IsometricWorldConstants.ZOOM_FACTOR
 import to.grindelf.naturewandering.IsometricWorldConstants.ZOOM_LOWER_LIMIT
 import to.grindelf.naturewandering.IsometricWorldConstants.ZOOM_UPPER_LIMIT
-import to.grindelf.naturewandering.JsonOperator.saveWorldToFile
+import to.grindelf.naturewandering.assets.characters.maincharacter.MainCharacter
+import to.grindelf.naturewandering.assets.characters.utility.Position
+import to.grindelf.naturewandering.dataop.JsonOperator.saveWorldToFile
 import to.grindelf.naturewandering.datamanager.SavesManager
+import to.grindelf.naturewandering.dataop.JsonOperator
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.Image
@@ -48,11 +51,46 @@ import kotlin.math.sqrt
 import kotlin.random.Random
 import kotlin.system.exitProcess
 
-data class Tile(val x: Int, val y: Int, val type: TileType)
+data class Tile(val x: Int, val y: Int, val type: TileType) {
 
-data class Bird(var x: Double, var y: Double, var dx: Double, var dy: Double)
+    override fun toString(): String = "$x,$y,$type;"
+
+    constructor(tileString: String) : this(
+        tileString.split(",")[0].toInt(),
+        tileString.split(",")[1].toInt(),
+        TileType.valueOf(tileString.split(",")[2])
+    )
+
+}
+
+data class Bird(var x: Double, var y: Double, var dx: Double, var dy: Double) {
+
+    override fun toString(): String = "$x,$y,$dx,$dy;"
+
+    constructor(birdString: String) : this(
+        birdString.split(",")[0].toDouble(),
+        birdString.split(",")[1].toDouble(),
+        birdString.split(",")[2].toDouble(),
+        birdString.split(",")[3].toDouble()
+    )
+
+}
 
 enum class TileType { GRASS, TREE, TREE2, STONE }
+
+data class WorldState(
+    val tiles: MutableList<Tile>,
+    val birds: MutableList<Bird>
+) {
+
+    override fun toString(): String = "$tiles|$birds"
+
+    constructor(worldStateString: String) : this(
+        worldStateString.split("|")[0].split(";").map { Tile(it) }.toMutableList(),
+        worldStateString.split("|")[1].split(";").map { Bird(it) }.toMutableList()
+    )
+
+}
 
 class IsometricWorld(
     createWorld: Boolean,
@@ -87,11 +125,12 @@ class IsometricWorld(
     private var scale = INITIAL_SCALE
 
     // CHARACTER
-    private var characterX = 0.0 // current position x
-    private var characterY = 0.0 // current position y
-    private var targetX: Double? = null // where to go by x
-    private var targetY: Double? = null // where to go by y
-    private var isMoving = false
+//    private var characterX = 0.0 // current position x
+//    private var characterY = 0.0 // current position y
+//    private var targetX: Double? = null // where to go by x
+//    private var targetY: Double? = null // where to go by y
+//    private var isMoving = false
+    private val mainCharacter: MainCharacter = MainCharacter()
 
     // GAME STATE
     private var paused: Boolean
@@ -239,26 +278,26 @@ class IsometricWorld(
 
     private fun spawnCharacter() {
         val centerTile = tiles.find { it.x == CHARACTER_INITIAL_X && it.y == CHARACTER_INITIAL_Y }
-        characterX = centerTile?.x?.toDouble() ?: 0.0
-        characterY = centerTile?.y?.toDouble() ?: 0.0
+        mainCharacter.position.x = centerTile?.x?.toDouble() ?: 0.0
+        mainCharacter.position.y = centerTile?.y?.toDouble() ?: 0.0
     }
 
     private fun updateCharacter() {
-        if (!paused && isMoving && targetX != null && targetY != null) {
+        if (!paused && mainCharacter.isMoving && mainCharacter.position.targetX != null && mainCharacter.position.targetY != null) {
             playStepSound()
 
-            val dx = targetX!! - characterX
-            val dy = targetY!! - characterY
+            val dx = mainCharacter.position.targetX!! - mainCharacter.position.x
+            val dy = mainCharacter.position.targetY!! - mainCharacter.position.y
             val distance = sqrt(dx * dx + dy * dy)
 
-            if (distance < CHARACTER_SPEED) {
-                characterX = targetX!!
-                characterY = targetY!!
-                isMoving = false
+            if (distance < CHARACTER_SPEED_DEFAULT) {
+                mainCharacter.position.x = mainCharacter.position.targetX!!
+                mainCharacter.position.y = mainCharacter.position.targetY!!
+                mainCharacter.isMoving = false
                 stopStepSound()
             } else {
-                characterX += (dx / distance) * CHARACTER_SPEED
-                characterY += (dy / distance) * CHARACTER_SPEED
+                mainCharacter.position.x += (dx / distance) * CHARACTER_SPEED_DEFAULT
+                mainCharacter.position.y += (dy / distance) * CHARACTER_SPEED_DEFAULT
             }
             repaint()
         } else {
@@ -342,8 +381,8 @@ class IsometricWorld(
 
         // LAYER 2: CHARACTER
         val characterScreenX =
-            ((characterX - characterY) * TILE_SIZE / 2 + width / 2 / scale + offsetX / scale).toInt()
-        val characterScreenY = ((characterX + characterY) * TILE_SIZE / 4 + offsetY / scale).toInt()
+            ((mainCharacter.position.x - mainCharacter.position.y) * TILE_SIZE / 2 + width / 2 / scale + offsetX / scale).toInt()
+        val characterScreenY = ((mainCharacter.position.x + mainCharacter.position.y) * TILE_SIZE / 4 + offsetY / scale).toInt()
         g2d.drawImage(
             characterTexture,
             characterScreenX - TILE_SIZE / 6,
@@ -478,9 +517,9 @@ class IsometricWorld(
         val worldX = ((clickX / (TILE_SIZE / 2)) + (clickY / (TILE_SIZE / 4))) / 2
         val worldY = ((clickY / (TILE_SIZE / 4)) - (clickX / (TILE_SIZE / 2))) / 2
 
-        targetX = worldX
-        targetY = worldY
-        isMoving = true
+        mainCharacter.position.targetX = worldX
+        mainCharacter.position.targetY = worldY
+        mainCharacter.isMoving = true
     }
 
     override fun mouseWheelMoved(e: MouseWheelEvent?) {
@@ -503,4 +542,7 @@ class IsometricWorld(
     override fun mouseReleased(e: MouseEvent) {}
     override fun mouseEntered(e: MouseEvent) {}
     override fun mouseExited(e: MouseEvent) {}
+
+    fun state(): WorldState = WorldState(tiles, birds)
+    fun playerPosition(): Position = mainCharacter.position
 }

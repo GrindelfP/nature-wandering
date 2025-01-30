@@ -1,6 +1,7 @@
-package to.grindelf.naturewandering
+package to.grindelf.naturewandering.dataop
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import to.grindelf.naturewandering.Tile
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream

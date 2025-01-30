@@ -13,7 +13,11 @@ object IsometricWorldConstants {
     const val CHARACTER_INITIAL_X = 10
     const val CHARACTER_INITIAL_Y = 10
 
-    const val CHARACTER_SPEED = 0.05
+    const val CHARACTER_SPEED_DEFAULT = 0.05
+    const val CHARACTER_HEALTH_MAX_DEFAULT = 10
+    const val CHARACTER_HEALTH_MIN = 0
+    const val CHARACTER_LEVEL_DEFAULT = 1
+    const val CHARACTER_LEVEL_MAX = 12
 
     const val CAMERA_MOVEMENT_LENGTH_X = 20
     const val CAMERA_MOVEMENT_LENGTH_Y = 20
