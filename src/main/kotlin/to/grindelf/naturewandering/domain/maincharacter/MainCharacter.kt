@@ -1,9 +1,11 @@
 package to.grindelf.naturewandering.domain.maincharacter
 
 import to.grindelf.naturewandering.IsometricWorldConstants
+import to.grindelf.naturewandering.IsometricWorldConstants.CHARACTER_SPEED_DEFAULT
 import to.grindelf.naturewandering.domain.utility.Inventory
 import to.grindelf.naturewandering.domain.utility.MainCharacterInventory
 import to.grindelf.naturewandering.domain.utility.Position
+import kotlin.math.sqrt
 
 data class MainCharacter(
 
@@ -24,5 +26,20 @@ data class MainCharacter(
         IsometricWorldConstants.CHARACTER_LEVEL_DEFAULT,
         MainCharacterInventory()
     )
+
+    fun update() {
+        val dx = this.position.targetX!! - this.position.x
+        val dy = this.position.targetY!! - this.position.y
+        val distance = sqrt(dx * dx + dy * dy)
+
+        if (distance < CHARACTER_SPEED_DEFAULT) {
+            this.position.x = this.position.targetX!!
+            this.position.y = this.position.targetY!!
+            this.isMoving = false
+        } else {
+            this.position.x += (dx / distance) * CHARACTER_SPEED_DEFAULT
+            this.position.y += (dy / distance) * CHARACTER_SPEED_DEFAULT
+        }
+    }
 
 }

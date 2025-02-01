@@ -116,7 +116,7 @@ class IsometricWorld(
         initializeListeners()
 
         Timer(32) {
-            updateCharacter()
+            updateCharacters()
             updateBirds()
         }.start()
     }
@@ -231,9 +231,9 @@ class IsometricWorld(
     }
 
     private fun spawnMainCharacter(): MainCharacter {
-        val centerTile = tiles.find { it.x == CHARACTER_INITIAL_X && it.y == CHARACTER_INITIAL_Y }
-//        mainCharacter.position.x = centerTile?.x?.toDouble() ?: 0.0
-//        mainCharacter.position.y = centerTile?.y?.toDouble() ?: 0.0
+        val centerTile = tiles.find {
+            it.x == CHARACTER_INITIAL_X && it.y == CHARACTER_INITIAL_Y
+        }
         val xPosition = centerTile?.x?.toDouble() ?: 0.0
         val yPosition = centerTile?.y?.toDouble() ?: 0.0
 
@@ -244,23 +244,15 @@ class IsometricWorld(
         return character
     }
 
-    private fun updateCharacter() {
+    private fun updateCharacters() {
+
+        updateMainCharacter()
+    }
+
+    private fun updateMainCharacter() {
         if (!paused && mainCharacter.isMoving && mainCharacter.position.targetX != null && mainCharacter.position.targetY != null) {
             playStepSound()
-
-            val dx = mainCharacter.position.targetX!! - mainCharacter.position.x
-            val dy = mainCharacter.position.targetY!! - mainCharacter.position.y
-            val distance = sqrt(dx * dx + dy * dy)
-
-            if (distance < CHARACTER_SPEED_DEFAULT) {
-                mainCharacter.position.x = mainCharacter.position.targetX!!
-                mainCharacter.position.y = mainCharacter.position.targetY!!
-                mainCharacter.isMoving = false
-                stopStepSound()
-            } else {
-                mainCharacter.position.x += (dx / distance) * CHARACTER_SPEED_DEFAULT
-                mainCharacter.position.y += (dy / distance) * CHARACTER_SPEED_DEFAULT
-            }
+            mainCharacter.update()
             repaint()
         } else {
             stopStepSound()
@@ -506,5 +498,5 @@ class IsometricWorld(
     override fun mouseExited(e: MouseEvent) {}
 
     fun state(): WorldState = WorldState(tiles, birds)
-    fun playerPosition(): Position = mainCharacter.position
+    // fun playerPosition(): Position = mainCharacter.position
 }
