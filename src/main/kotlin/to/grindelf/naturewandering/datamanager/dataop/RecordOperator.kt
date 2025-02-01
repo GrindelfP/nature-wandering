@@ -1,7 +1,7 @@
-package to.grindelf.naturewandering.dataop
+package to.grindelf.naturewandering.datamanager.dataop
 
-import to.grindelf.naturewandering.WorldState
-import to.grindelf.naturewandering.assets.characters.utility.Position
+import to.grindelf.naturewandering.domain.utility.Position
+import to.grindelf.naturewandering.domain.utility.WorldState
 import java.io.File
 import java.io.InputStream
 

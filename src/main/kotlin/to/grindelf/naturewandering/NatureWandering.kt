@@ -3,7 +3,7 @@ package to.grindelf.naturewandering
 import to.grindelf.naturewandering.IsometricWorldConstants.WINDOW_HEIGHT
 import to.grindelf.naturewandering.IsometricWorldConstants.WINDOW_NAME
 import to.grindelf.naturewandering.IsometricWorldConstants.WINDOW_WIDTH
-import to.grindelf.naturewandering.datamanager.SavesManager
+import to.grindelf.naturewandering.datamanager.saves.SavesManager
 import java.awt.Color
 import java.awt.Font
 import java.awt.Toolkit

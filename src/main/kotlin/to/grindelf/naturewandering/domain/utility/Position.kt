@@ -1,4 +1,4 @@
-package to.grindelf.naturewandering.assets.characters.utility
+package to.grindelf.naturewandering.domain.utility
 
 data class Position(
     var x: Double,

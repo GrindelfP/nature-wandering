@@ -1,6 +1,7 @@
 package to.grindelf.naturewandering.dataop
 
 import to.grindelf.naturewandering.IsometricWorld
+import to.grindelf.naturewandering.datamanager.dataop.RecordOperator
 import java.io.File
 import javax.swing.JFrame
 import javax.swing.JPanel

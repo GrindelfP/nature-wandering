@@ -1,4 +1,4 @@
-package to.grindelf.naturewandering.assets.characters.utility
+package to.grindelf.naturewandering.domain.utility
 
 import to.grindelf.naturewandering.assets.objects.Item
 

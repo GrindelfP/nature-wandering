@@ -26,11 +26,15 @@ import to.grindelf.naturewandering.IsometricWorldConstants.WORLD_WIDTH
 import to.grindelf.naturewandering.IsometricWorldConstants.ZOOM_FACTOR
 import to.grindelf.naturewandering.IsometricWorldConstants.ZOOM_LOWER_LIMIT
 import to.grindelf.naturewandering.IsometricWorldConstants.ZOOM_UPPER_LIMIT
-import to.grindelf.naturewandering.assets.characters.maincharacter.MainCharacter
-import to.grindelf.naturewandering.assets.characters.utility.Position
-import to.grindelf.naturewandering.dataop.JsonOperator.saveWorldToFile
-import to.grindelf.naturewandering.datamanager.SavesManager
-import to.grindelf.naturewandering.dataop.JsonOperator
+import to.grindelf.naturewandering.domain.maincharacter.MainCharacter
+import to.grindelf.naturewandering.domain.utility.Position
+import to.grindelf.naturewandering.datamanager.dataop.JsonOperator.saveWorldToFile
+import to.grindelf.naturewandering.datamanager.saves.SavesManager
+import to.grindelf.naturewandering.datamanager.dataop.JsonOperator
+import to.grindelf.naturewandering.domain.animals.Bird
+import to.grindelf.naturewandering.domain.utility.WorldState
+import to.grindelf.naturewandering.domain.world.Tile
+import to.grindelf.naturewandering.domain.world.utility.TileType
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.Image
@@ -51,46 +55,6 @@ import kotlin.math.sqrt
 import kotlin.random.Random
 import kotlin.system.exitProcess
 
-data class Tile(val x: Int, val y: Int, val type: TileType) {
-
-    override fun toString(): String = "$x,$y,$type;"
-
-    constructor(tileString: String) : this(
-        tileString.split(",")[0].toInt(),
-        tileString.split(",")[1].toInt(),
-        TileType.valueOf(tileString.split(",")[2])
-    )
-
-}
-
-data class Bird(var x: Double, var y: Double, var dx: Double, var dy: Double) {
-
-    override fun toString(): String = "$x,$y,$dx,$dy;"
-
-    constructor(birdString: String) : this(
-        birdString.split(",")[0].toDouble(),
-        birdString.split(",")[1].toDouble(),
-        birdString.split(",")[2].toDouble(),
-        birdString.split(",")[3].toDouble()
-    )
-
-}
-
-enum class TileType { GRASS, TREE, TREE2, STONE }
-
-data class WorldState(
-    val tiles: MutableList<Tile>,
-    val birds: MutableList<Bird>
-) {
-
-    override fun toString(): String = "$tiles|$birds"
-
-    constructor(worldStateString: String) : this(
-        worldStateString.split("|")[0].split(";").map { Tile(it) }.toMutableList(),
-        worldStateString.split("|")[1].split(";").map { Bird(it) }.toMutableList()
-    )
-
-}
 
 class IsometricWorld(
     createWorld: Boolean,
@@ -125,15 +89,10 @@ class IsometricWorld(
     private var scale = INITIAL_SCALE
 
     // CHARACTER
-//    private var characterX = 0.0 // current position x
-//    private var characterY = 0.0 // current position y
-//    private var targetX: Double? = null // where to go by x
-//    private var targetY: Double? = null // where to go by y
-//    private var isMoving = false
-    private val mainCharacter: MainCharacter = MainCharacter()
+    private val mainCharacter: MainCharacter = spawnMainCharacter()
 
     // GAME STATE
-    private var paused: Boolean
+    private var paused: Boolean = false
 
     init {
         loadTextures()
@@ -151,20 +110,15 @@ class IsometricWorld(
             loadWorldFrom(worldFile)
         }
 
-        spawnCharacter()
         playBackgroundSound()
         spawnBirds()
 
         initializeListeners()
 
-        paused = false
-
-
         Timer(32) {
             updateCharacter()
             updateBirds()
         }.start()
-
     }
 
     private fun initializeListeners() {
@@ -276,10 +230,18 @@ class IsometricWorld(
         }
     }
 
-    private fun spawnCharacter() {
+    private fun spawnMainCharacter(): MainCharacter {
         val centerTile = tiles.find { it.x == CHARACTER_INITIAL_X && it.y == CHARACTER_INITIAL_Y }
-        mainCharacter.position.x = centerTile?.x?.toDouble() ?: 0.0
-        mainCharacter.position.y = centerTile?.y?.toDouble() ?: 0.0
+//        mainCharacter.position.x = centerTile?.x?.toDouble() ?: 0.0
+//        mainCharacter.position.y = centerTile?.y?.toDouble() ?: 0.0
+        val xPosition = centerTile?.x?.toDouble() ?: 0.0
+        val yPosition = centerTile?.y?.toDouble() ?: 0.0
+
+        val character = MainCharacter(
+            Position(xPosition, yPosition, null, null)
+        )
+
+        return character
     }
 
     private fun updateCharacter() {
