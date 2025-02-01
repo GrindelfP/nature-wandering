@@ -498,5 +498,5 @@ class IsometricWorld(
     override fun mouseExited(e: MouseEvent) {}
 
     fun state(): WorldState = WorldState(tiles, birds)
-    // fun playerPosition(): Position = mainCharacter.position
+    fun playerPosition(): Position = mainCharacter.position
 }
