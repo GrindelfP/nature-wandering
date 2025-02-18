@@ -14,7 +14,8 @@ object RecordOperator {
         ) {
 
         val worldStateAsString = worldState.toString()
-        val playerPositionAsString = playerPosition.toString()
+        val playerPositionAsString = playerPosition.toString() // WARNING!!! The player's position
+                                                               // should be saved the last
 
         saveFile.writeText(worldStateAsString + playerPositionAsString)
     }

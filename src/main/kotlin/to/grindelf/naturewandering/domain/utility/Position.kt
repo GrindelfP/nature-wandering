@@ -7,7 +7,7 @@ data class Position(
     var targetY: Double?,
 ) {
 
-    override fun toString(): String = "|$x,$y,$targetX,$targetY"
+    override fun toString(): String = "$x,$y,$targetX,$targetY"
 
     constructor(playerPositionString: String) : this(
         playerPositionString.split("|")[0].split(",")[0].toDouble(),

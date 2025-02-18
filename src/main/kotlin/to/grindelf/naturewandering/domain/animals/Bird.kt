@@ -6,7 +6,7 @@ package to.grindelf.naturewandering.domain.animals
  */
 data class Bird(var x: Double, var y: Double, var dx: Double, var dy: Double) {
 
-    override fun toString(): String = "$x,$y,$dx,$dy;"
+    override fun toString(): String = "$x,$y,$dx,$dy"
 
     constructor(birdString: String) : this(
         birdString.split(",")[0].toDouble(),

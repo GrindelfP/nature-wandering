@@ -8,7 +8,23 @@ data class WorldState(
     val birds: MutableList<Bird>
 ) {
 
-    override fun toString(): String = "$tiles|$birds"
+    override fun toString(): String {
+
+        var resultString = ""
+
+        tiles.forEach { tile ->
+            resultString += "$tile;"
+        }
+
+        resultString += "|"
+
+        birds.forEach { bird ->
+            resultString += "$bird;"
+        }
+
+        return "$resultString|"
+
+    }
 
     constructor(worldStateString: String) : this(
         worldStateString.split("|")[0].split(";").map { Tile(it) }.toMutableList(),
