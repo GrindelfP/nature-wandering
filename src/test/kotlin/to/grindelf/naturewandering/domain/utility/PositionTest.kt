@@ -1,7 +1,6 @@
 package to.grindelf.naturewandering.domain.utility
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.*
 import kotlin.test.Test
 
 class PositionTest {
