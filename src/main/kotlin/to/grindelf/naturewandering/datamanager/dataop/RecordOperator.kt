@@ -1,9 +1,9 @@
 package to.grindelf.naturewandering.datamanager.dataop
 
+import to.grindelf.naturewandering.domain.maincharacter.MainCharacter
 import to.grindelf.naturewandering.domain.utility.Position
 import to.grindelf.naturewandering.domain.utility.WorldState
 import java.io.File
-import java.io.InputStream
 
 object RecordOperator {
 
@@ -18,13 +18,19 @@ object RecordOperator {
                                                                // should be saved the last
 
         saveFile.writeText(worldStateAsString + playerPositionAsString)
+
+        // TODO: change the position to MainCharacter
     }
 
-    fun loadGameFrom(stream: InputStream): Pair<WorldState, Position> {
+    fun loadGameFrom(saveFile: File): Pair<WorldState, Position> {
 
-        val worldAsString = stream.read()
+        val worldAndPLayerAsString = saveFile.readText()
+        val worldAsString = worldAndPLayerAsString.split("||")[0]
+        val playerAsString = worldAndPLayerAsString.split("||")[1]
 
-        TODO()
+        return Pair<WorldState, Position>(WorldState(worldAsString), Position(playerAsString))
+
+        // TODO: change the position to MainCharacter
     }
 
 }

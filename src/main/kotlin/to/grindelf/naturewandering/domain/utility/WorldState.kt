@@ -22,7 +22,7 @@ data class WorldState(
             resultString += "$bird;"
         }
 
-        return "$resultString|"
+        return "$resultString||"
 
     }
 
