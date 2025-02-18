@@ -10,10 +10,10 @@ data class Position(
     override fun toString(): String = "$x,$y,$targetX,$targetY"
 
     constructor(playerPositionString: String) : this(
-        playerPositionString.split("|")[0].split(",")[0].toDouble(),
-        playerPositionString.split("|")[0].split(",")[1].toDouble(),
-        playerPositionString.split("|")[0].split(",")[2].toDoubleOrNull(),
-        playerPositionString.split("|")[0].split(",")[3].toDoubleOrNull(),
+        playerPositionString.split(",")[0].toDouble(),
+        playerPositionString.split(",")[1].toDouble(),
+        playerPositionString.split(",")[2].toDoubleOrNull(),
+        playerPositionString.split(",")[3].toDoubleOrNull(),
     )
 
 }
