@@ -7,7 +7,6 @@ import to.grindelf.naturewandering.IsometricWorldConstants.CAMERA_MOVEMENT_LENGT
 import to.grindelf.naturewandering.IsometricWorldConstants.CAMERA_MOVEMENT_LENGTH_Y
 import to.grindelf.naturewandering.IsometricWorldConstants.CHARACTER_INITIAL_X
 import to.grindelf.naturewandering.IsometricWorldConstants.CHARACTER_INITIAL_Y
-import to.grindelf.naturewandering.IsometricWorldConstants.CHARACTER_SPEED_DEFAULT
 import to.grindelf.naturewandering.IsometricWorldConstants.CHARACTER_TEXTURE_PATH
 import to.grindelf.naturewandering.IsometricWorldConstants.FOOTSTEPS_SOUND_PATH
 import to.grindelf.naturewandering.IsometricWorldConstants.FOREST_BACKGROUND_SOUND_PATH
@@ -51,7 +50,6 @@ import javax.swing.JFrame
 import javax.swing.JOptionPane
 import javax.swing.JPanel
 import javax.swing.Timer
-import kotlin.math.sqrt
 import kotlin.random.Random
 import kotlin.system.exitProcess
 
@@ -60,7 +58,10 @@ class IsometricWorld(
     createWorld: Boolean,
     worldName: String = "world",
     private val frame: JFrame,  // Reference to the frame
-    private val mainMenuPanel: JPanel  // Reference to the main menu panel
+    private val mainMenuPanel: JPanel,  // Reference to the main menu panel
+    // ========================================================================
+    // put this below params equal to some value STRICTLY for the DEBUG purpose
+    val mainCharacter: MainCharacter = MainCharacter()
 ) : JPanel(), KeyListener, MouseWheelListener, MouseListener {
 
     // WORLD
@@ -88,8 +89,8 @@ class IsometricWorld(
     private var offsetY = CAMERA_INITIAL_OFFSET_Y
     private var scale = INITIAL_SCALE
 
-    // CHARACTER
-    private val mainCharacter: MainCharacter = spawnMainCharacter()
+//    // CHARACTER
+//    val mainCharacter: MainCharacter = spawnMainCharacter()
 
     // GAME STATE
     private var paused: Boolean = false
@@ -497,6 +498,8 @@ class IsometricWorld(
     override fun mouseEntered(e: MouseEvent) {}
     override fun mouseExited(e: MouseEvent) {}
 
-    fun state(): WorldState = WorldState(tiles, birds)
+    fun getWorldState(): WorldState = WorldState(tiles, birds)
+
+    @Deprecated("Should be removed")
     fun playerPosition(): Position = mainCharacter.position
 }

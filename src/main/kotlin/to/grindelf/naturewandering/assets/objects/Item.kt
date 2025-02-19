@@ -1,3 +1,8 @@
 package to.grindelf.naturewandering.assets.objects
 
-abstract class Item
+data class Item(
+    val id: String
+) {
+
+    override fun toString(): String = id
+}
