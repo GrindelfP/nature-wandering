@@ -20,6 +20,7 @@ class RecordOperatorTest {
         "testWorld",
         JFrame(),
         JPanel(),
+        1010,
         MainCharacter(
             Position(10.0, 10.0, null, null),
             false,
@@ -27,7 +28,8 @@ class RecordOperatorTest {
             IsometricWorldConstants.CHARACTER_HEALTH_MAX_DEFAULT,
             IsometricWorldConstants.CHARACTER_LEVEL_DEFAULT,
             MainCharacterInventory("12,13,14")
-        )
+        ),
+
     )
 
     @Test

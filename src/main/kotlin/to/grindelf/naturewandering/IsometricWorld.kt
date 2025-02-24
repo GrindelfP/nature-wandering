@@ -59,6 +59,7 @@ class IsometricWorld(
     worldName: String = "world",
     private val frame: JFrame,  // Reference to the frame
     private val mainMenuPanel: JPanel,  // Reference to the main menu panel
+    worldSeed: Int? = null,
     // ========================================================================
     // put this below params equal to some value STRICTLY for the DEBUG purpose
     val mainCharacter: MainCharacter = MainCharacter()
@@ -103,7 +104,7 @@ class IsometricWorld(
         if (createWorld) {
             // Generate new world and save it
             val newWorldFile = SavesManager.createSaveFile(worldName)
-            generateWorld()
+            generateWorld(worldSeed)
             saveWorldToFile(tiles, newWorldFile)
         } else {
             // Load existing world
@@ -170,10 +171,13 @@ class IsometricWorld(
         }
     }
 
-    fun generateWorld() {
+    fun generateWorld(worldSeed: Int?) {
+
+        val randomizer = if (worldSeed != null) Random(worldSeed) else Random
+
         for (x in 0 until WORLD_WIDTH) {
             for (y in 0 until WORLD_HEIGHT) {
-                val randomValue = Random.nextFloat()
+                val randomValue = randomizer.nextFloat()
                 val tileType = when {
                     randomValue < STONE_PROBABILITY -> TileType.STONE  // Stone (10%)
                     randomValue < TREE_PROBABILITY -> TileType.TREE   // Trees of the first type (20%)
