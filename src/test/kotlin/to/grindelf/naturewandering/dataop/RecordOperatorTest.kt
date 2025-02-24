@@ -5,7 +5,6 @@ import to.grindelf.naturewandering.IsometricWorld
 import to.grindelf.naturewandering.IsometricWorldConstants
 import to.grindelf.naturewandering.datamanager.dataop.RecordOperator
 import to.grindelf.naturewandering.domain.maincharacter.MainCharacter
-import to.grindelf.naturewandering.domain.utility.Inventory
 import to.grindelf.naturewandering.domain.utility.MainCharacterInventory
 import to.grindelf.naturewandering.domain.utility.Position
 import java.io.File
@@ -44,7 +43,7 @@ class RecordOperatorTest {
     @Test
     fun testReadWorldFromFile() {
 
-        // TODO: Fix the bug (somehow the save file and the world are not the same!
+        // TODO: somehow birds are not saved properly (not their dx, dy but x and y)
 
         val gameSave = RecordOperator.loadGameFrom(File("testSaveGameTo"))
 

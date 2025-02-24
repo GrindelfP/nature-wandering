@@ -113,7 +113,6 @@ class IsometricWorld(
         }
 
         playBackgroundSound()
-        spawnBirds()
 
         initializeListeners()
 
@@ -187,10 +186,15 @@ class IsometricWorld(
                 tiles.add(Tile(x, y, tileType)) // Complete the list of tiles
             }
         }
+
+        spawnBirds(randomizer)
     }
 
     fun loadWorldFrom(worldFile: File) {
         tiles.addAll(JsonOperator.loadWorldFromFile(worldFile))
+
+        val randomizer = Random
+        spawnBirds(randomizer)
     }
 
     /**
@@ -265,14 +269,14 @@ class IsometricWorld(
     }
 
 
-    private fun spawnBirds() {
+    private fun spawnBirds(randomizer: Random) {
         repeat(NUMBER_OF_BIRDS) {
             birds.add(
                 Bird(
-                    x = Random.nextDouble(0.0, WORLD_WIDTH.toDouble()),
-                    y = Random.nextDouble(0.0, WORLD_HEIGHT.toDouble()),
-                    dx = Random.nextDouble(-0.1, 0.1),
-                    dy = Random.nextDouble(-0.1, 0.1)
+                    x = randomizer.nextDouble(0.0, WORLD_WIDTH.toDouble()),
+                    y = randomizer.nextDouble(0.0, WORLD_HEIGHT.toDouble()),
+                    dx = randomizer.nextDouble(-0.1, 0.1),
+                    dy = randomizer.nextDouble(-0.1, 0.1)
                 )
             )
         }

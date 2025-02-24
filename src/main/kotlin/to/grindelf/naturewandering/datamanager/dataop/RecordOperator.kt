@@ -13,9 +13,9 @@ object RecordOperator {
         ) {
 
         val worldStateAsString = worldState.toString()
-        val playerPositionAsString = mainCharacter.toString() // WARNING!!! The MainCharacter should be saved the last
-
-        saveFile.writeText(worldStateAsString + playerPositionAsString)
+        val mainCharacterAsString = mainCharacter.toString() // WARNING!!! The MainCharacter should be saved the last
+        val save = worldStateAsString + mainCharacterAsString
+        saveFile.writeText(save)
 
     }
 
