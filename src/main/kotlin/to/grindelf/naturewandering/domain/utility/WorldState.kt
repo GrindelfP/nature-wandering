@@ -27,7 +27,7 @@ data class WorldState(
     }
 
     constructor(worldStateString: String) : this(
-        worldStateString.split("|")[0].split(";").filter { it.isNotEmpty() }.map { Tile(it) }.toMutableList(),
+        worldStateString.split("|")[0].split(";").filter { it.isNotEmpty() }.mapIndexed { i, it -> Tile(i, it) }.toMutableList(),
         worldStateString.split("|")[1].split(";").filter { it.isNotEmpty() }.map { Bird(it) }.toMutableList()
     )
 

@@ -4,8 +4,10 @@ object IsometricWorldConstants {
 
     const val TILE_SIZE = 64
 
-    const val WORLD_WIDTH = 80
-    const val WORLD_HEIGHT = 80
+    const val WORLD_SIZE = 80
+
+    const val WORLD_WIDTH = WORLD_SIZE
+    const val WORLD_HEIGHT = WORLD_SIZE
 
     const val CAMERA_INITIAL_OFFSET_X = 0
     const val CAMERA_INITIAL_OFFSET_Y = -500

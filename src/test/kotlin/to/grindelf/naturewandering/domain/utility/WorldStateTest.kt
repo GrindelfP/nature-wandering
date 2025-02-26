@@ -22,6 +22,8 @@ class WorldStateTest {
             )
         )
         val testStringWorldState = "0,0,GRASS;1,0,TREE2;|0.0,0.0,0.0,0.0;10.0,10.0,10.0,10.0;|"
+
+        // TODO change the save - indexes are redundant, tile types can be coded with 1 or two digits
         val testWorldState = WorldState(testStringWorldState)
 
         assertThat(testWorldState).isEqualTo(trueWorldState)
