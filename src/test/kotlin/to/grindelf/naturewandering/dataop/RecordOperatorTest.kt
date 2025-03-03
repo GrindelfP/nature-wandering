@@ -34,7 +34,7 @@ class RecordOperatorTest {
     @Test
     fun testSaveGameTo() {
         RecordOperator.saveGameTo(
-            File("testSaveGameTo"),
+            File("testSaveGameTo.brd"),
             testWorld.getWorldState(),
             testWorld.mainCharacter
         )
@@ -45,7 +45,7 @@ class RecordOperatorTest {
 
         // TODO: somehow birds are not saved properly (not their dx, dy but x and y)
 
-        val gameSave = RecordOperator.loadGameFrom(File("testSaveGameTo"))
+        val gameSave = RecordOperator.loadGameFrom(File("testSaveGameTo.brd"))
 
         val worldState = gameSave.first
         val mainCharacter = gameSave.second
