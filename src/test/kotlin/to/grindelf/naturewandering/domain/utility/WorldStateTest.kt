@@ -12,6 +12,7 @@ class WorldStateTest {
     fun `GIVEN string to initialize WorldState WHEN initialized THEN equal to the expected WorldState`() {
 
         val trueWorldState = WorldState(
+            2,
             mutableListOf<Tile>(
                 Tile(0, 0, TileType.GRASS),
                 Tile(1, 0, TileType.TREE2)
@@ -23,7 +24,7 @@ class WorldStateTest {
         )
         val testStringWorldState = "G1;T2;|0.0,0.0,0.0,0.0;10.0,10.0,10.0,10.0;|"
 
-        val testWorldState = WorldState(testStringWorldState)
+        val testWorldState = WorldState.initFromString(testStringWorldState)
 
         assertThat(testWorldState).isEqualTo(trueWorldState)
     }
