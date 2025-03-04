@@ -4,6 +4,7 @@ import to.grindelf.naturewandering.IsometricWorldConstants.WORLD_SIZE
 import to.grindelf.naturewandering.domain.animals.Bird
 import to.grindelf.naturewandering.domain.exceptions.SaveFileException
 import to.grindelf.naturewandering.domain.world.Tile
+import kotlin.math.sqrt
 
 data class WorldState(
     val worldSize: Int = WORLD_SIZE,
@@ -13,7 +14,7 @@ data class WorldState(
 
     override fun toString(): String {
 
-        var resultString = ""
+        var resultString = "$worldSize|"
         tiles.forEach { tile ->
             resultString += "$tile;"
         }
@@ -28,9 +29,18 @@ data class WorldState(
     companion object {
         fun initFromString(worldStateString: String): WorldState {
 
+            require(worldStateString.count {it == '|'} == 4) {
+                throw SaveFileException("File structure cannot be read!")
+            }
+
             val worldStateParams = worldStateString.split("|")
 
             val worldSizeString = worldStateParams[0]
+
+            require(worldStateParams.size == 5 && worldStateParams[4].isEmpty()) {
+                throw SaveFileException("File structure is incorrect!")
+            }
+
             require(worldSizeString.isNotEmpty()) {
                 throw SaveFileException("World size is missing!")
             }
@@ -42,10 +52,13 @@ data class WorldState(
             val tiles = worldStateParams[1].split(";").filter { tileString ->
                 tileString.isNotEmpty()
             }.mapIndexed { i, tileString ->
-                Tile(i, tileString, worldSize - 1)
+                Tile(i, tileString, worldSize)
             }.toMutableList()
             require(tiles.isNotEmpty()) {
                 throw SaveFileException("Tiles weren't read from the save file!")
+            }
+            require(sqrt(tiles.size.toDouble()) == worldSize.toDouble()) {
+                throw SaveFileException("Tiles matrix is not square!")
             }
 
             val birrrrrrds = worldStateParams[2].split(";").filter { birdString ->
