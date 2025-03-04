@@ -21,6 +21,7 @@ import to.grindelf.naturewandering.IsometricWorldConstants.TREE2_TEXTURE_PATH
 import to.grindelf.naturewandering.IsometricWorldConstants.TREE_PROBABILITY
 import to.grindelf.naturewandering.IsometricWorldConstants.TREE_TEXTURE_PATH
 import to.grindelf.naturewandering.IsometricWorldConstants.WORLD_HEIGHT
+import to.grindelf.naturewandering.IsometricWorldConstants.WORLD_SIZE
 import to.grindelf.naturewandering.IsometricWorldConstants.WORLD_WIDTH
 import to.grindelf.naturewandering.IsometricWorldConstants.ZOOM_FACTOR
 import to.grindelf.naturewandering.IsometricWorldConstants.ZOOM_LOWER_LIMIT
@@ -506,7 +507,7 @@ class IsometricWorld(
     override fun mouseEntered(e: MouseEvent) {}
     override fun mouseExited(e: MouseEvent) {}
 
-    fun getWorldState(): WorldState = WorldState(tiles, birds)
+    fun getWorldState(): WorldState = WorldState(WORLD_SIZE, tiles, birds)
 
     @Deprecated("Should be removed")
     fun playerPosition(): Position = mainCharacter.position

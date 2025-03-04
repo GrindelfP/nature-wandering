@@ -22,7 +22,7 @@ class WorldStateTest {
                 Bird(10.0, 10.0, 10.0, 10.0)
             )
         )
-        val testStringWorldState = "G1;T2;|0.0,0.0,0.0,0.0;10.0,10.0,10.0,10.0;|"
+        val testStringWorldState = "2|G0;T1;|0.0,0.0,0.0,0.0;10.0,10.0,10.0,10.0;|"
 
         val testWorldState = WorldState.initFromString(testStringWorldState)
 

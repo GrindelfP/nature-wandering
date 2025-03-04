@@ -25,7 +25,7 @@ object RecordOperator {
         val worldAsString = worldAndPLayerAsString.split("||")[0]
         val mainCharacterAsString = worldAndPLayerAsString.split("||")[1]
 
-        return Pair<WorldState, MainCharacter>(WorldState(worldAsString), MainCharacter(mainCharacterAsString))
+        return Pair<WorldState, MainCharacter>(WorldState.initFromString(worldAsString), MainCharacter(mainCharacterAsString))
 
         // TODO: change the position to MainCharacter
     }
