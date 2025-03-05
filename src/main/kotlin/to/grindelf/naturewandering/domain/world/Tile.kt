@@ -4,7 +4,7 @@ import to.grindelf.naturewandering.domain.world.utility.TileType
 
 data class Tile(val x: Int, val y: Int, val type: TileType) {
 
-    override fun toString(): String = "$x,$y,$type"
+    override fun toString(): String = type.code
 
     constructor(index: Int, tileString: String, upperIndexLimit: Int) : this(
         if (index == 0) 0 else index / upperIndexLimit,

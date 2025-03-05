@@ -83,4 +83,13 @@ class WorldStateTest {
             WorldState.initFromString(testStringWorldState)
         }
     }
+
+    @Test
+    fun `GIVEN world state WHEN called toString() function THEN correct string representation formed`() {
+
+        val correctWorldString = "2|G0;T0;T1;S0;|0.0,0.0,0.0,0.0;10.0,10.0,10.0,10.0;||"
+        val worldString = trueWorldState.toString()
+
+        assertThat(worldString).isEqualTo(correctWorldString)
+    }
 }
